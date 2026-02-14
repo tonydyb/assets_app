@@ -1,0 +1,19 @@
+{
+  "name": "assets-app",
+  "version": "0.1.0",
+  "description": "Personal Asset Management Electron App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "postinstall": "node ./scripts/create-data-dir.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^26.6.10"
+  },
+  "dependencies": {
+    "sql.js": "^1.8.0"
+  }
+}
