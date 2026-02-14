@@ -1,5 +1,8 @@
+/*
+  JSX source version.
+  Runtime pages currently load app-react.runtime.js.
+*/
 (function () {
-  const e = React.createElement;
   const { useEffect, useMemo, useRef, useState } = React;
 
   function pageName() {
@@ -19,65 +22,81 @@
 
   function DashboardPage() {
     const [rows, setRows] = useState([]);
-    const [totalJPY, setTotalJPY] = useState(0);
+    const [totalAmount, setTotalAmount] = useState(0);
+    const [displayCurrency, setDisplayCurrency] = useState('JPY');
 
     useEffect(() => {
       (async () => {
         const assets = await window.api.getLatestAssets();
         const cfg = window.api.getConfig ? await window.api.getConfig() : null;
         const JPY_PER_CNY = cfg && cfg.JPY_PER_CNY ? cfg.JPY_PER_CNY : (100 / 4.5);
+        const DISPLAY_CURRENCY =
+          cfg && cfg.TOTAL_ASSET_DISPLAY_CURRENCY
+            ? String(cfg.TOTAL_ASSET_DISPLAY_CURRENCY).toUpperCase()
+            : 'JPY';
 
         let total = 0;
         assets.forEach((a) => {
           const amount = toNumber(a.amount, 0);
-          total += a.currency === 'CNY' ? amount * JPY_PER_CNY : amount;
+          if (DISPLAY_CURRENCY === 'CNY') {
+            total += a.currency === 'JPY' ? amount / JPY_PER_CNY : amount;
+          } else {
+            total += a.currency === 'CNY' ? amount * JPY_PER_CNY : amount;
+          }
         });
 
         setRows(assets.slice(0, 10));
-        setTotalJPY(Math.round(total));
+        setDisplayCurrency(DISPLAY_CURRENCY === 'CNY' ? 'CNY' : 'JPY');
+        setTotalAmount(Math.round(total));
       })();
     }, []);
 
-    return e('div', null,
-      e('h1', null, 'Dashboard'),
-      e('section', { className: 'total-section' },
-        e('div', { className: 'total-row' },
-          e('h2', null, 'Total Asset'),
-          e('div', { id: 'totalAsset' }, `\u00a5${totalJPY.toLocaleString()} JPY`)
-        )
-      ),
-      e('section', { className: 'nav-section' },
-        e('h2', null, 'Navigation'),
-        e('nav', null,
-          e('a', { href: 'assets.html' }, 'View Assets'),
-          e('a', { href: 'add_asset.html' }, 'Add Asset'),
-          e('a', { href: 'chart.html' }, 'View Chart'),
-          e('a', { href: 'asset_types.html' }, 'Asset Types')
-        )
-      ),
-      e('section', null,
-        e('h2', null, 'Recent Assets'),
-        e('table', { id: 'recentAssets' },
-          e('thead', null,
-            e('tr', null,
-              e('th', null, 'Date'),
-              e('th', null, 'Type'),
-              e('th', null, 'Name'),
-              e('th', null, 'Amount'),
-              e('th', null, 'Currency')
-            )
-          ),
-          e('tbody', null,
-            rows.map((r) => e('tr', { key: r.id || `${r.date}-${r.name}` },
-              e('td', null, r.date || ''),
-              e('td', null, r.type || ''),
-              e('td', null, r.name || ''),
-              e('td', null, String(r.amount || 0)),
-              e('td', null, r.currency || '')
-            ))
-          )
-        )
-      )
+    return (
+      <div>
+        <h1>Dashboard</h1>
+        <section className="total-section">
+          <div className="total-row">
+            <h2>Total Asset</h2>
+            <div id="totalAsset">{`¥${totalAmount.toLocaleString()} ${displayCurrency}`}</div>
+          </div>
+        </section>
+
+        <section className="nav-section">
+          <h2>Navigation</h2>
+          <nav>
+            <a href="assets.html">View Assets</a>
+            <a href="add_asset.html">Add Asset</a>
+            <a href="chart.html">View Chart</a>
+            <a href="asset_types.html">Asset Types</a>
+          </nav>
+        </section>
+
+        <section>
+          <h2>Recent Assets</h2>
+          <table id="recentAssets">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Amount</th>
+                <th>Currency</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id || `${r.date}-${r.name}`}>
+                  <td>{r.date || ''}</td>
+                  <td>{r.type || ''}</td>
+                  <td>{r.name || ''}</td>
+                  <td>{String(r.amount || 0)}</td>
+                  <td>{r.currency || ''}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      </div>
     );
   }
 
@@ -87,10 +106,7 @@
     const [editing, setEditing] = useState(null);
 
     async function refresh() {
-      const [a, t] = await Promise.all([
-        window.api.getAssets(),
-        window.api.getAssetTypes(),
-      ]);
+      const [a, t] = await Promise.all([window.api.getAssets(), window.api.getAssetTypes()]);
       setAssets(a);
       setTypes(t);
     }
@@ -112,7 +128,9 @@
         amount: item.amount || '',
         currency: item.currency || '',
       };
-      try { sessionStorage.setItem('prefillAsset', JSON.stringify(pre)); } catch (err) {}
+      try {
+        sessionStorage.setItem('prefillAsset', JSON.stringify(pre));
+      } catch (err) {}
       window.location.href = 'add_asset.html';
     }
 
@@ -130,105 +148,131 @@
       refresh();
     }
 
-    return e('div', null,
-      e('h1', null, 'Assets'),
-      e('a', { href: 'add_asset.html' }, 'Add Asset'),
-      ' ',
-      e('a', { href: 'dashboard.html' }, 'Dashboard'),
+    return (
+      <div>
+        <h1>Assets</h1>
+        <a href="add_asset.html">Add Asset</a> <a href="dashboard.html">Dashboard</a>
 
-      editing ? e('div', { id: 'editAssetForm', style: { margin: '20px 0', padding: '15px', border: '1px solid #ccc' } },
-        e('h3', null, 'Edit Asset'),
-        e('label', null, 'Date ', e('input', {
-          id: 'editDate',
-          type: 'date',
-          required: true,
-          value: editing.date,
-          onChange: (ev) => setEditing({ ...editing, date: ev.target.value }),
-        })),
-        e('label', null, 'Type ', e('select', {
-          id: 'editType',
-          value: String(editing.typeId || ''),
-          onChange: (ev) => setEditing({ ...editing, typeId: ev.target.value }),
-        },
-          e('option', { value: '' }, '-- Select Type --'),
-          types.map((t) => e('option', { key: t.id, value: String(t.id) }, t.name))
-        )),
-        e('label', null, 'Name ', e('input', {
-          id: 'editName',
-          type: 'text',
-          value: editing.name,
-          onChange: (ev) => setEditing({ ...editing, name: ev.target.value }),
-        })),
-        e('label', null, 'Amount ', e('input', {
-          id: 'editAmount',
-          type: 'number',
-          step: '0.01',
-          value: editing.amount,
-          onChange: (ev) => setEditing({ ...editing, amount: ev.target.value }),
-        })),
-        e('label', null, 'Currency ', e('select', {
-          id: 'editCurrency',
-          value: editing.currency,
-          onChange: (ev) => setEditing({ ...editing, currency: ev.target.value }),
-        },
-          e('option', { value: 'JPY' }, 'JPY'),
-          e('option', { value: 'CNY' }, 'CNY')
-        )),
-        e('button', { id: 'updateAssetBtn', type: 'button', onClick: onUpdate }, 'Update'),
-        ' ',
-        e('button', { id: 'cancelEditBtn', type: 'button', onClick: () => setEditing(null) }, 'Cancel')
-      ) : null,
+        {editing ? (
+          <div id="editAssetForm" style={{ margin: '20px 0', padding: '15px', border: '1px solid #ccc' }}>
+            <h3>Edit Asset</h3>
+            <label>
+              Date{' '}
+              <input
+                id="editDate"
+                type="date"
+                required
+                value={editing.date}
+                onChange={(ev) => setEditing({ ...editing, date: ev.target.value })}
+              />
+            </label>
+            <label>
+              Type{' '}
+              <select
+                id="editType"
+                value={String(editing.typeId || '')}
+                onChange={(ev) => setEditing({ ...editing, typeId: ev.target.value })}
+              >
+                <option value="">-- Select Type --</option>
+                {types.map((t) => (
+                  <option key={t.id} value={String(t.id)}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Name{' '}
+              <input
+                id="editName"
+                type="text"
+                value={editing.name}
+                onChange={(ev) => setEditing({ ...editing, name: ev.target.value })}
+              />
+            </label>
+            <label>
+              Amount{' '}
+              <input
+                id="editAmount"
+                type="number"
+                step="0.01"
+                value={editing.amount}
+                onChange={(ev) => setEditing({ ...editing, amount: ev.target.value })}
+              />
+            </label>
+            <label>
+              Currency{' '}
+              <select
+                id="editCurrency"
+                value={editing.currency}
+                onChange={(ev) => setEditing({ ...editing, currency: ev.target.value })}
+              >
+                <option value="JPY">JPY</option>
+                <option value="CNY">CNY</option>
+              </select>
+            </label>
+            <button id="updateAssetBtn" type="button" onClick={onUpdate}>
+              Update
+            </button>{' '}
+            <button id="cancelEditBtn" type="button" onClick={() => setEditing(null)}>
+              Cancel
+            </button>
+          </div>
+        ) : null}
 
-      e('table', null,
-        e('thead', null,
-          e('tr', null,
-            e('th', null, 'Date'),
-            e('th', null, 'Type'),
-            e('th', null, 'Name'),
-            e('th', null, 'Amount'),
-            e('th', null, 'Currency'),
-            e('th', null, 'Actions')
-          )
-        ),
-        e('tbody', { id: 'assetList' },
-          assets.map((a) => e('tr', { key: a.id },
-            e('td', null, a.date || ''),
-            e('td', null, a.type || ''),
-            e('td', null, a.name || ''),
-            e('td', null, String(a.amount || 0)),
-            e('td', null, a.currency || ''),
-            e('td', null,
-              e('button', { className: 'dup', onClick: () => onDuplicate(a) }, 'Duplicate'),
-              ' ',
-              e('button', {
-                className: 'edit',
-                onClick: () => setEditing({
-                  id: a.id,
-                  date: a.date || '',
-                  typeId: a.type_id || '',
-                  name: a.name || '',
-                  amount: a.amount || '',
-                  currency: a.currency || 'JPY',
-                }),
-              }, 'Edit'),
-              ' ',
-              e('button', { className: 'del', onClick: () => onDelete(a.id) }, 'Delete')
-            )
-          ))
-        )
-      )
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Name</th>
+              <th>Amount</th>
+              <th>Currency</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="assetList">
+            {assets.map((a) => (
+              <tr key={a.id}>
+                <td>{a.date || ''}</td>
+                <td>{a.type || ''}</td>
+                <td>{a.name || ''}</td>
+                <td>{String(a.amount || 0)}</td>
+                <td>{a.currency || ''}</td>
+                <td>
+                  <button className="dup" onClick={() => onDuplicate(a)}>
+                    Duplicate
+                  </button>{' '}
+                  <button
+                    className="edit"
+                    onClick={() =>
+                      setEditing({
+                        id: a.id,
+                        date: a.date || '',
+                        typeId: a.type_id || '',
+                        name: a.name || '',
+                        amount: a.amount || '',
+                        currency: a.currency || 'JPY',
+                      })
+                    }
+                  >
+                    Edit
+                  </button>{' '}
+                  <button className="del" onClick={() => onDelete(a.id)}>
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     );
   }
 
   function AddAssetPage() {
     const [types, setTypes] = useState([]);
-    const [form, setForm] = useState({
-      date: '',
-      typeId: '',
-      name: '',
-      amount: '',
-      currency: 'JPY',
-    });
+    const [form, setForm] = useState({ date: '', typeId: '', name: '', amount: '', currency: 'JPY' });
 
     useEffect(() => {
       (async () => {
@@ -268,37 +312,68 @@
       window.location.href = 'assets.html';
     }
 
-    return e('div', null,
-      e('h1', null, 'Add Asset'),
-      e('form', { id: 'addForm', onSubmit },
-        e('label', null, 'Date ', e('input', {
-          type: 'date', id: 'date', required: true, value: form.date,
-          onChange: (ev) => setForm({ ...form, date: ev.target.value }),
-        })),
-        e('label', null, 'Type ', e('select', {
-          id: 'type', value: form.typeId,
-          onChange: (ev) => setForm({ ...form, typeId: ev.target.value }),
-        },
-          types.map((t) => e('option', { key: t.id, value: String(t.id) }, t.name))
-        )),
-        e('label', null, 'Name ', e('input', {
-          id: 'name', type: 'text', value: form.name,
-          onChange: (ev) => setForm({ ...form, name: ev.target.value }),
-        })),
-        e('label', null, 'Amount ', e('input', {
-          id: 'amount', type: 'number', step: '0.01', value: form.amount,
-          onChange: (ev) => setForm({ ...form, amount: ev.target.value }),
-        })),
-        e('label', null, 'Currency ', e('select', {
-          id: 'currency', value: form.currency,
-          onChange: (ev) => setForm({ ...form, currency: ev.target.value }),
-        },
-          e('option', { value: 'JPY' }, 'JPY'),
-          e('option', { value: 'CNY' }, 'CNY')
-        )),
-        e('button', { type: 'submit' }, 'Save')
-      ),
-      e('a', { href: 'assets.html' }, 'Back')
+    return (
+      <div>
+        <h1>Add Asset</h1>
+        <form id="addForm" onSubmit={onSubmit}>
+          <label>
+            Date{' '}
+            <input
+              type="date"
+              id="date"
+              required
+              value={form.date}
+              onChange={(ev) => setForm({ ...form, date: ev.target.value })}
+            />
+          </label>
+          <label>
+            Type{' '}
+            <select
+              id="type"
+              value={form.typeId}
+              onChange={(ev) => setForm({ ...form, typeId: ev.target.value })}
+            >
+              {types.map((t) => (
+                <option key={t.id} value={String(t.id)}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Name{' '}
+            <input
+              id="name"
+              type="text"
+              value={form.name}
+              onChange={(ev) => setForm({ ...form, name: ev.target.value })}
+            />
+          </label>
+          <label>
+            Amount{' '}
+            <input
+              id="amount"
+              type="number"
+              step="0.01"
+              value={form.amount}
+              onChange={(ev) => setForm({ ...form, amount: ev.target.value })}
+            />
+          </label>
+          <label>
+            Currency{' '}
+            <select
+              id="currency"
+              value={form.currency}
+              onChange={(ev) => setForm({ ...form, currency: ev.target.value })}
+            >
+              <option value="JPY">JPY</option>
+              <option value="CNY">CNY</option>
+            </select>
+          </label>
+          <button type="submit">Save</button>
+        </form>
+        <a href="assets.html">Back</a>
+      </div>
     );
   }
 
@@ -341,55 +416,66 @@
       refresh();
     }
 
-    return e('div', null,
-      e('h1', null, 'Asset Types'),
-      e('form', { id: 'addTypeForm', onSubmit: addType },
-        e('input', {
-          id: 'typeName',
-          placeholder: 'New type name',
-          required: true,
-          value: newName,
-          onChange: (ev) => setNewName(ev.target.value),
-        }),
-        e('button', { type: 'submit' }, 'Add Type')
-      ),
+    return (
+      <div>
+        <h1>Asset Types</h1>
+        <form id="addTypeForm" onSubmit={addType}>
+          <input
+            id="typeName"
+            placeholder="New type name"
+            required
+            value={newName}
+            onChange={(ev) => setNewName(ev.target.value)}
+          />
+          <button type="submit">Add Type</button>
+        </form>
 
-      editing ? e('div', { id: 'editTypeForm', style: { marginTop: '20px', padding: '10px', border: '1px solid #ccc' } },
-        e('h3', null, 'Edit Asset Type'),
-        e('input', {
-          id: 'editTypeName',
-          placeholder: 'Type name',
-          required: true,
-          value: editing.name,
-          onChange: (ev) => setEditing({ ...editing, name: ev.target.value }),
-        }),
-        ' ',
-        e('button', { id: 'updateBtn', type: 'button', onClick: updateType }, 'Update'),
-        ' ',
-        e('button', { id: 'cancelBtn', type: 'button', onClick: () => setEditing(null) }, 'Cancel')
-      ) : null,
+        {editing ? (
+          <div id="editTypeForm" style={{ marginTop: '20px', padding: '10px', border: '1px solid #ccc' }}>
+            <h3>Edit Asset Type</h3>
+            <input
+              id="editTypeName"
+              placeholder="Type name"
+              required
+              value={editing.name}
+              onChange={(ev) => setEditing({ ...editing, name: ev.target.value })}
+            />{' '}
+            <button id="updateBtn" type="button" onClick={updateType}>
+              Update
+            </button>{' '}
+            <button id="cancelBtn" type="button" onClick={() => setEditing(null)}>
+              Cancel
+            </button>
+          </div>
+        ) : null}
 
-      e('a', { href: 'dashboard.html' }, 'Dashboard'),
-      e('table', null,
-        e('thead', null,
-          e('tr', null,
-            e('th', null, 'ID'),
-            e('th', null, 'Name'),
-            e('th', null, 'Actions')
-          )
-        ),
-        e('tbody', { id: 'typeList' },
-          types.map((t) => e('tr', { key: t.id },
-            e('td', null, String(t.id)),
-            e('td', null, t.name),
-            e('td', null,
-              e('button', { className: 'edit', onClick: () => setEditing({ id: t.id, name: t.name }) }, 'Edit'),
-              ' ',
-              e('button', { className: 'del', onClick: () => deleteType(t.id) }, 'Delete')
-            )
-          ))
-        )
-      )
+        <a href="dashboard.html">Dashboard</a>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="typeList">
+            {types.map((t) => (
+              <tr key={t.id}>
+                <td>{String(t.id)}</td>
+                <td>{t.name}</td>
+                <td>
+                  <button className="edit" onClick={() => setEditing({ id: t.id, name: t.name })}>
+                    Edit
+                  </button>{' '}
+                  <button className="del" onClick={() => deleteType(t.id)}>
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     );
   }
 
@@ -401,13 +487,22 @@
         const assets = await window.api.getAssets();
         const cfg = window.api.getConfig ? await window.api.getConfig() : null;
         const JPY_PER_CNY = cfg && cfg.JPY_PER_CNY ? cfg.JPY_PER_CNY : (100 / 4.5);
+        const DISPLAY_CURRENCY =
+          cfg && cfg.TOTAL_ASSET_DISPLAY_CURRENCY
+            ? String(cfg.TOTAL_ASSET_DISPLAY_CURRENCY).toUpperCase()
+            : 'JPY';
 
         const map = {};
         for (const a of assets) {
           const key = a.date;
           const amount = toNumber(a.amount, 0);
-          const amountJPY = a.currency === 'CNY' ? amount * JPY_PER_CNY : amount;
-          map[key] = (map[key] || 0) + amountJPY;
+          let amountInDisplayCurrency = 0;
+          if (DISPLAY_CURRENCY === 'CNY') {
+            amountInDisplayCurrency = a.currency === 'JPY' ? amount / JPY_PER_CNY : amount;
+          } else {
+            amountInDisplayCurrency = a.currency === 'CNY' ? amount * JPY_PER_CNY : amount;
+          }
+          map[key] = (map[key] || 0) + amountInDisplayCurrency;
         }
 
         const labels = Object.keys(map).sort();
@@ -416,8 +511,8 @@
         const canvas = canvasRef.current;
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
-        const w = canvas.width = canvas.clientWidth || 800;
-        const h = canvas.height = 420;
+        const w = (canvas.width = canvas.clientWidth || 800);
+        const h = (canvas.height = 420);
         ctx.clearRect(0, 0, w, h);
 
         const margin = { top: 60, right: 30, bottom: 80, left: 70 };
@@ -451,7 +546,7 @@
         }
 
         const barCount = labels.length;
-        const gap = Math.max(8, Math.floor(chartW * 0.08 / (barCount || 1)));
+        const gap = Math.max(8, Math.floor((chartW * 0.08) / (barCount || 1)));
         const totalGap = gap * (barCount + 1);
         const barW = Math.max(8, (chartW - totalGap) / (barCount || 1));
         const colors = ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f', '#edc949', '#af7aa1'];
@@ -481,35 +576,37 @@
         ctx.rotate(-Math.PI / 2);
         ctx.textAlign = 'center';
         ctx.font = '14px Arial';
-        ctx.fillText('Amount (JPY)', 0, 0);
+        ctx.fillText(`Amount (${DISPLAY_CURRENCY === 'CNY' ? 'CNY' : 'JPY'})`, 0, 0);
         ctx.restore();
       })();
     }, []);
 
-    return e('div', null,
-      e('h1', null, 'Asset Chart'),
-      e('canvas', {
-        id: 'chart',
-        ref: canvasRef,
-        width: 800,
-        height: 400,
-        style: { border: '1px solid #ddd', display: 'block', marginBottom: '8px', maxWidth: '100%' },
-      }),
-      e('div', { style: { width: '100%', textAlign: 'right', marginTop: '8px' } },
-        e('a', { href: 'dashboard.html' }, 'Back')
-      )
+    return (
+      <div>
+        <h1>Asset Chart</h1>
+        <canvas
+          id="chart"
+          ref={canvasRef}
+          width={800}
+          height={400}
+          style={{ border: '1px solid #ddd', display: 'block', marginBottom: '8px', maxWidth: '100%' }}
+        />
+        <div style={{ width: '100%', textAlign: 'right', marginTop: '8px' }}>
+          <a href="dashboard.html">Back</a>
+        </div>
+      </div>
     );
   }
 
   function App() {
     const p = useMemo(pageName, []);
-    if (p === 'assets') return e(AssetsPage);
-    if (p === 'add_asset') return e(AddAssetPage);
-    if (p === 'asset_types') return e(AssetTypesPage);
-    if (p === 'chart') return e(ChartPage);
-    return e(DashboardPage);
+    if (p === 'assets') return <AssetsPage />;
+    if (p === 'add_asset') return <AddAssetPage />;
+    if (p === 'asset_types') return <AssetTypesPage />;
+    if (p === 'chart') return <ChartPage />;
+    return <DashboardPage />;
   }
 
   const root = document.getElementById('root');
-  ReactDOM.createRoot(root).render(e(App));
+  ReactDOM.createRoot(root).render(<App />);
 })();

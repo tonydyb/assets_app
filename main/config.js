@@ -3,4 +3,6 @@
 module.exports = {
   // amount of JPY per 1 CNY, derived from 100 JPY = 4.5 CNY
   JPY_PER_CNY: 100 / 4.5,
+  // Dashboard total asset display currency: 'JPY' or 'CNY'
+  TOTAL_ASSET_DISPLAY_CURRENCY: 'JPY',
 };
