@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 
 const assetService = require('./main/assetService');
@@ -17,8 +17,15 @@ function createWindow() {
   win.loadFile(path.join(__dirname, 'renderer', 'dashboard.html'));
 }
 
-app.whenReady().then(() => {
-  assetService.init();
+app.whenReady().then(async () => {
+  try {
+    await assetService.init();
+  } catch (err) {
+    console.error('Failed to initialize app database:', err);
+    app.quit();
+    return;
+  }
+
   createWindow();
 
   app.on('activate', function () {
@@ -85,4 +92,40 @@ ipcMain.handle('getExchangeRates', async () => {
 
 ipcMain.handle('upsertExchangeRate', async (event, rate) => {
   return assetService.upsertExchangeRate(rate);
+});
+
+ipcMain.handle('exportDatabase', async () => {
+  try {
+    const defaultName = `assets-export-${new Date().toISOString().slice(0, 10)}.db`;
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      title: 'Export Database',
+      defaultPath: path.join(app.getPath('documents'), defaultName),
+      filters: [{ name: 'SQLite Database', extensions: ['db'] }],
+    });
+    if (canceled || !filePath) return { canceled: true };
+    const result = assetService.exportDatabase(filePath);
+    return { success: true, path: result.path };
+  } catch (err) {
+    return { success: false, error: err.message || 'Export failed' };
+  }
+});
+
+ipcMain.handle('importDatabase', async () => {
+  try {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      title: 'Import Database',
+      properties: ['openFile'],
+      filters: [{ name: 'SQLite Database', extensions: ['db'] }],
+    });
+    if (canceled || !filePaths || filePaths.length === 0) return { canceled: true };
+
+    const result = assetService.importDatabase(filePaths[0]);
+    setTimeout(() => {
+      app.relaunch();
+      app.exit(0);
+    }, 300);
+    return { success: true, willRestart: true, backupPath: result.backupPath || '' };
+  } catch (err) {
+    return { success: false, error: err.message || 'Import failed' };
+  }
 });

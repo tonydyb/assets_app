@@ -7,6 +7,14 @@ async function init() {
   db = await DatabaseModule.init();
 }
 
+function exportDatabase(filePath) {
+  return DatabaseModule.exportDatabase(filePath);
+}
+
+function importDatabase(filePath) {
+  return DatabaseModule.importDatabase(filePath);
+}
+
 function getAssets() {
   // include a.type_id so renderer can preselect the asset type when editing
   const stmt = db.prepare(`SELECT a.id, a.date, a.name, a.amount, a.currency, a.type_id, at.name as type FROM assets a LEFT JOIN asset_types at ON a.type_id = at.id ORDER BY date DESC`);
@@ -133,6 +141,8 @@ function modifyAssetType(id, name) {
 
 module.exports = {
   init,
+  exportDatabase,
+  importDatabase,
   getAssets,
   getLatestAssets,
   addAsset,

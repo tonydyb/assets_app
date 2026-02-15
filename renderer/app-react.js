@@ -82,6 +82,13 @@
       prev: 'Prev',
       next: 'Next',
       of: 'of',
+      dataTransfer: 'Data Transfer',
+      exportData: 'Export Data',
+      importData: 'Import Data',
+      exportSuccess: 'Database exported:',
+      importWillRestart: 'Database imported. The app will restart.',
+      importDataConfirm:
+        'Importing will overwrite current data. The app will restart after import. Continue?',
     },
     'zh-CN': {
       dashboard: '首页',
@@ -139,6 +146,12 @@
       prev: '上一页',
       next: '下一页',
       of: '/',
+      dataTransfer: '数据迁移',
+      exportData: '导出数据',
+      importData: '导入数据',
+      exportSuccess: '数据库已导出：',
+      importWillRestart: '数据库已导入，应用即将重启。',
+      importDataConfirm: '导入会覆盖当前数据，并在完成后重启应用。是否继续？',
     },
     'ja-JP': {
       dashboard: 'ダッシュボード',
@@ -196,6 +209,13 @@
       prev: '前へ',
       next: '次へ',
       of: '/',
+      dataTransfer: 'データ移行',
+      exportData: 'データをエクスポート',
+      importData: 'データをインポート',
+      exportSuccess: 'データベースをエクスポートしました:',
+      importWillRestart: 'データベースをインポートしました。アプリを再起動します。',
+      importDataConfirm:
+        'インポートすると現在のデータを上書きし、完了後にアプリが再起動します。続行しますか？',
     },
   };
 
@@ -490,6 +510,27 @@
       setMessage(t('ratesSaved'));
     }
 
+    async function onExportData() {
+      const result = await window.api.exportDatabase();
+      if (!result || result.canceled) return;
+      if (result.success) {
+        setMessage(`${t('exportSuccess')} ${result.path}`);
+        return;
+      }
+      setMessage(result.error || 'Export failed');
+    }
+
+    async function onImportData() {
+      if (!window.confirm(t('importDataConfirm'))) return;
+      const result = await window.api.importDatabase();
+      if (!result || result.canceled) return;
+      if (result.success) {
+        setMessage(t('importWillRestart'));
+        return;
+      }
+      setMessage(result.error || 'Import failed');
+    }
+
     function findUpdatedAt(base, quote) {
       const hit = rates.find((r) => r.base_currency === base && r.quote_currency === quote);
       return hit && hit.updated_at ? hit.updated_at : '-';
@@ -598,6 +639,18 @@
             {t('saveRatesToDb')}
           </button>
           {message ? <p>{message}</p> : null}
+        </section>
+
+        <section style={{ marginTop: '18px', maxWidth: '760px' }}>
+          <h3>{t('dataTransfer')}</h3>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <button type="button" onClick={onExportData}>
+              {t('exportData')}
+            </button>
+            <button type="button" onClick={onImportData}>
+              {t('importData')}
+            </button>
+          </div>
         </section>
 
         <p style={{ marginTop: '12px' }}>

@@ -5,6 +5,7 @@ const initSqlJs = require('sql.js');
 let DB = null;
 let db = null;
 let resolvedDbPath = null;
+const migrationsDir = path.join(__dirname, 'migrations');
 
 function resolveDbPath() {
   if (resolvedDbPath) return resolvedDbPath;
@@ -31,6 +32,97 @@ function ensureDbDir() {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
+function getMigrationFiles() {
+  if (!fs.existsSync(migrationsDir)) return [];
+
+  return fs
+    .readdirSync(migrationsDir)
+    .map((file) => {
+      const match = /^(\d+)_.*\.sql$/i.exec(file);
+      if (!match) return null;
+      return {
+        version: Number(match[1]),
+        fileName: file,
+        filePath: path.join(migrationsDir, file),
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.version - b.version);
+}
+
+function getUserVersion() {
+  const result = db.exec('PRAGMA user_version');
+  if (!result.length || !result[0].values.length) return 0;
+  return Number(result[0].values[0][0] || 0);
+}
+
+function setUserVersion(version) {
+  db.run(`PRAGMA user_version = ${Number(version)}`);
+}
+
+function backupDatabase(fromVersion, toVersion) {
+  const dbPath = resolveDbPath();
+  if (!fs.existsSync(dbPath)) return null;
+
+  const backupDir = path.join(path.dirname(dbPath), 'backups');
+  if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const backupPath = path.join(
+    backupDir,
+    `assets.v${fromVersion}-to-v${toVersion}.${timestamp}.db`
+  );
+  fs.copyFileSync(dbPath, backupPath);
+  return backupPath;
+}
+
+function backupCurrentDatabase(tag) {
+  const dbPath = resolveDbPath();
+  if (!fs.existsSync(dbPath)) return null;
+
+  const backupDir = path.join(path.dirname(dbPath), 'backups');
+  if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+
+  const safeTag = String(tag || 'manual').replace(/[^a-zA-Z0-9_-]/g, '-');
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const backupPath = path.join(backupDir, `assets.${safeTag}.${timestamp}.db`);
+  fs.copyFileSync(dbPath, backupPath);
+  return backupPath;
+}
+
+function runMigrations() {
+  const migrationFiles = getMigrationFiles();
+  if (!migrationFiles.length) return;
+
+  const currentVersion = getUserVersion();
+  const targetVersion = migrationFiles[migrationFiles.length - 1].version;
+  if (currentVersion >= targetVersion) return;
+
+  const pending = migrationFiles.filter((m) => m.version > currentVersion);
+  const backupPath = backupDatabase(currentVersion, targetVersion);
+  if (backupPath) {
+    console.info(`[db] backup created: ${backupPath}`);
+  }
+
+  for (const migration of pending) {
+    const sql = fs.readFileSync(migration.filePath, 'utf8');
+    try {
+      db.run('BEGIN');
+      db.run(sql);
+      setUserVersion(migration.version);
+      db.run('COMMIT');
+      console.info(`[db] migration applied: ${migration.fileName}`);
+    } catch (err) {
+      try {
+        db.run('ROLLBACK');
+      } catch (rollbackErr) {
+        console.error('[db] rollback failed:', rollbackErr);
+      }
+      throw new Error(`Migration failed (${migration.fileName}): ${err.message}`);
+    }
+  }
+}
+
 async function init() {
   ensureDbDir();
   const dbPath = resolveDbPath();
@@ -46,62 +138,7 @@ async function init() {
     db = new DB.Database();
   }
 
-  // Create tables if they don't exist
-  db.run(`
-    CREATE TABLE IF NOT EXISTS asset_types (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT UNIQUE NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS assets (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      date TEXT NOT NULL,
-      type_id INTEGER,
-      name TEXT,
-      amount REAL DEFAULT 0,
-      currency TEXT,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(type_id) REFERENCES asset_types(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS settings (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL,
-      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS exchange_rates (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      base_currency TEXT NOT NULL,
-      quote_currency TEXT NOT NULL,
-      rate REAL NOT NULL,
-      source TEXT NOT NULL DEFAULT 'manual',
-      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(base_currency, quote_currency)
-    );
-  `);
-
-  // Seed default settings
-  db.run(`
-    INSERT OR IGNORE INTO settings (key, value) VALUES ('app.language', 'en-US');
-    INSERT OR IGNORE INTO settings (key, value) VALUES ('app.display_currency', 'USD');
-    INSERT OR IGNORE INTO settings (key, value) VALUES ('fx.cache_ttl_days', '90');
-
-    INSERT OR IGNORE INTO asset_types (name) VALUES ('美股');
-    INSERT OR IGNORE INTO asset_types (name) VALUES ('中国股票');
-    INSERT OR IGNORE INTO asset_types (name) VALUES ('现金人民币');
-
-    INSERT INTO assets (date, type_id, name, amount, currency)
-    SELECT
-      DATE('now'),
-      at.id,
-      '现金人民币',
-      10000,
-      'CNY'
-    FROM asset_types at
-    WHERE at.name = '现金人民币'
-      AND NOT EXISTS (SELECT 1 FROM assets);
-  `);
+  runMigrations();
 
   saveDb();
   return db;
@@ -113,6 +150,71 @@ function saveDb() {
   const data = db.export();
   const buffer = Buffer.from(data);
   fs.writeFileSync(dbPath, buffer);
+}
+
+function validateDatabaseFile(filePath) {
+  if (!DB) throw new Error('Database engine is not initialized');
+  if (!filePath || !fs.existsSync(filePath)) {
+    throw new Error('Import file does not exist');
+  }
+
+  const fileBuffer = fs.readFileSync(filePath);
+  const tempDb = new DB.Database(fileBuffer);
+  try {
+    const integrity = tempDb.exec('PRAGMA integrity_check');
+    const integrityValue =
+      integrity && integrity[0] && integrity[0].values && integrity[0].values[0]
+        ? String(integrity[0].values[0][0] || '')
+        : '';
+    if (integrityValue.toLowerCase() !== 'ok') {
+      throw new Error('Invalid database file: integrity check failed');
+    }
+
+    const tableRes = tempDb.exec("SELECT name FROM sqlite_master WHERE type='table'");
+    const names = new Set(
+      (tableRes && tableRes[0] && tableRes[0].values ? tableRes[0].values : []).map((r) => String(r[0]))
+    );
+    const requiredTables = ['asset_types', 'assets', 'settings', 'exchange_rates'];
+    const missingTables = requiredTables.filter((t) => !names.has(t));
+    if (missingTables.length > 0) {
+      throw new Error(`Invalid database file: missing tables (${missingTables.join(', ')})`);
+    }
+  } finally {
+    if (tempDb && typeof tempDb.close === 'function') tempDb.close();
+  }
+}
+
+function exportDatabase(filePath) {
+  if (!db) throw new Error('Database is not initialized');
+  if (!filePath) throw new Error('Export path is required');
+
+  saveDb();
+  fs.copyFileSync(resolveDbPath(), filePath);
+  return { path: filePath };
+}
+
+function importDatabase(filePath) {
+  if (!db) throw new Error('Database is not initialized');
+  if (!filePath) throw new Error('Import path is required');
+
+  validateDatabaseFile(filePath);
+  saveDb();
+  const backupPath = backupCurrentDatabase('pre-import');
+  const dbPath = resolveDbPath();
+
+  if (db && typeof db.close === 'function') {
+    try {
+      db.close();
+    } catch (err) {
+      console.warn('[db] close old db failed:', err);
+    }
+  }
+
+  fs.copyFileSync(filePath, dbPath);
+  db = new DB.Database(fs.readFileSync(dbPath));
+  runMigrations();
+  saveDb();
+  return { dbPath, backupPath };
 }
 
 // Wrapper to provide sync-like interface for prepare/run
@@ -177,3 +279,7 @@ Object.defineProperty(module.exports, 'dbPath', {
   enumerable: true,
   get: resolveDbPath,
 });
+module.exports.exportDatabase = exportDatabase;
+module.exports.importDatabase = importDatabase;
+module.exports.validateDatabaseFile = validateDatabaseFile;
+module.exports.backupCurrentDatabase = backupCurrentDatabase;
