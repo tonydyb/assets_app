@@ -2,17 +2,38 @@ const path = require('path');
 const fs = require('fs');
 const initSqlJs = require('sql.js');
 
-const dbPath = path.join(__dirname, '..', 'data', 'assets.db');
 let DB = null;
 let db = null;
+let resolvedDbPath = null;
+
+function resolveDbPath() {
+  if (resolvedDbPath) return resolvedDbPath;
+
+  const devDbPath = path.join(__dirname, '..', 'data', 'assets.db');
+
+  try {
+    const { app } = require('electron');
+    if (app && app.isPackaged) {
+      resolvedDbPath = path.join(app.getPath('userData'), 'assets.db');
+      return resolvedDbPath;
+    }
+  } catch (err) {
+    // Fallback to dev path when Electron app context is unavailable.
+  }
+
+  resolvedDbPath = devDbPath;
+  return resolvedDbPath;
+}
 
 function ensureDbDir() {
+  const dbPath = resolveDbPath();
   const dir = path.dirname(dbPath);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
 async function init() {
   ensureDbDir();
+  const dbPath = resolveDbPath();
   
   // Initialize sql.js
   DB = await initSqlJs();
@@ -65,6 +86,21 @@ async function init() {
     INSERT OR IGNORE INTO settings (key, value) VALUES ('app.language', 'en-US');
     INSERT OR IGNORE INTO settings (key, value) VALUES ('app.display_currency', 'USD');
     INSERT OR IGNORE INTO settings (key, value) VALUES ('fx.cache_ttl_days', '90');
+
+    INSERT OR IGNORE INTO asset_types (name) VALUES ('美股');
+    INSERT OR IGNORE INTO asset_types (name) VALUES ('中国股票');
+    INSERT OR IGNORE INTO asset_types (name) VALUES ('现金人民币');
+
+    INSERT INTO assets (date, type_id, name, amount, currency)
+    SELECT
+      DATE('now'),
+      at.id,
+      '现金人民币',
+      10000,
+      'CNY'
+    FROM asset_types at
+    WHERE at.name = '现金人民币'
+      AND NOT EXISTS (SELECT 1 FROM assets);
   `);
 
   saveDb();
@@ -73,6 +109,7 @@ async function init() {
 
 function saveDb() {
   if (!db) return;
+  const dbPath = resolveDbPath();
   const data = db.export();
   const buffer = Buffer.from(data);
   fs.writeFileSync(dbPath, buffer);
@@ -135,4 +172,8 @@ async function getDb() {
   return dbWrapper;
 }
 
-module.exports = { init: getDb, dbPath };
+module.exports = { init: getDb, getDbPath: resolveDbPath };
+Object.defineProperty(module.exports, 'dbPath', {
+  enumerable: true,
+  get: resolveDbPath,
+});
