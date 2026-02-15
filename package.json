@@ -1,7 +1,7 @@
 {
   "name": "assets-app",
   "productName": "Asset Manager",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "description": "Personal Asset Management Electron App",
   "main": "main.js",
   "scripts": {
