@@ -70,3 +70,19 @@ ipcMain.handle('deleteAssetType', async (event, id) => {
 ipcMain.handle('modifyAssetType', async (event, id, name) => {
   return assetService.modifyAssetType(id, name);
 });
+
+ipcMain.handle('getSettings', async () => {
+  return assetService.getSettings();
+});
+
+ipcMain.handle('setSetting', async (event, key, value) => {
+  return assetService.setSetting(key, value);
+});
+
+ipcMain.handle('getExchangeRates', async () => {
+  return assetService.getExchangeRates();
+});
+
+ipcMain.handle('upsertExchangeRate', async (event, rate) => {
+  return assetService.upsertExchangeRate(rate);
+});

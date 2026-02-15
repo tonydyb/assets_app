@@ -1,6 +1,7 @@
 const DatabaseModule = require('./database');
 
 let db = null;
+const SUPPORTED_CURRENCIES = new Set(['JPY', 'CNY', 'USD']);
 
 async function init() {
   db = await DatabaseModule.init();
@@ -40,6 +41,64 @@ function modifyAsset({ id, date, typeId, name, amount, currency }) {
   return { changes: info.changes };
 }
 
+function getSettings() {
+  const stmt = db.prepare('SELECT key, value FROM settings');
+  const rows = stmt.all();
+  const map = {};
+  rows.forEach((r) => {
+    map[r.key] = r.value;
+  });
+  return map;
+}
+
+function setSetting(key, value) {
+  const stmt = db.prepare(`
+    INSERT INTO settings (key, value, updated_at)
+    VALUES (?, ?, CURRENT_TIMESTAMP)
+    ON CONFLICT(key) DO UPDATE SET
+      value = excluded.value,
+      updated_at = CURRENT_TIMESTAMP
+  `);
+  const info = stmt.run(key, String(value ?? ''));
+  return { changes: info.changes };
+}
+
+function getExchangeRates() {
+  const stmt = db.prepare(`
+    SELECT id, base_currency, quote_currency, rate, source, updated_at
+    FROM exchange_rates
+    ORDER BY base_currency, quote_currency
+  `);
+  return stmt.all();
+}
+
+function upsertExchangeRate({ baseCurrency, quoteCurrency, rate }) {
+  const base = String(baseCurrency || '').toUpperCase();
+  const quote = String(quoteCurrency || '').toUpperCase();
+  const numericRate = Number(rate);
+
+  if (!SUPPORTED_CURRENCIES.has(base) || !SUPPORTED_CURRENCIES.has(quote)) {
+    return { error: '仅支持 JPY/CNY/USD 汇率配置' };
+  }
+  if (base === quote) {
+    return { error: 'base currency 和 quote currency 不能相同' };
+  }
+  if (!Number.isFinite(numericRate) || numericRate <= 0) {
+    return { error: '汇率必须为大于 0 的数字' };
+  }
+
+  const stmt = db.prepare(`
+    INSERT INTO exchange_rates (base_currency, quote_currency, rate, source, updated_at)
+    VALUES (?, ?, ?, 'manual', CURRENT_TIMESTAMP)
+    ON CONFLICT(base_currency, quote_currency) DO UPDATE SET
+      rate = excluded.rate,
+      source = 'manual',
+      updated_at = CURRENT_TIMESTAMP
+  `);
+  const info = stmt.run(base, quote, numericRate);
+  return { success: true, changes: info.changes };
+}
+
 function getAssetTypes() {
   const stmt = db.prepare('SELECT id, name FROM asset_types ORDER BY id');
   return stmt.all();
@@ -72,4 +131,19 @@ function modifyAssetType(id, name) {
   return { changes: info.changes };
 }
 
-module.exports = { init, getAssets, getLatestAssets, addAsset, deleteAsset, modifyAsset, getAssetTypes, addAssetType, deleteAssetType, modifyAssetType };
+module.exports = {
+  init,
+  getAssets,
+  getLatestAssets,
+  addAsset,
+  deleteAsset,
+  modifyAsset,
+  getAssetTypes,
+  addAssetType,
+  deleteAssetType,
+  modifyAssetType,
+  getSettings,
+  setSetting,
+  getExchangeRates,
+  upsertExchangeRate,
+};

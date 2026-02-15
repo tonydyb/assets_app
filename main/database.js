@@ -42,6 +42,29 @@ async function init() {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(type_id) REFERENCES asset_types(id)
     );
+
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS exchange_rates (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      base_currency TEXT NOT NULL,
+      quote_currency TEXT NOT NULL,
+      rate REAL NOT NULL,
+      source TEXT NOT NULL DEFAULT 'manual',
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(base_currency, quote_currency)
+    );
+  `);
+
+  // Seed default settings
+  db.run(`
+    INSERT OR IGNORE INTO settings (key, value) VALUES ('app.language', 'en-US');
+    INSERT OR IGNORE INTO settings (key, value) VALUES ('app.display_currency', 'USD');
+    INSERT OR IGNORE INTO settings (key, value) VALUES ('fx.cache_ttl_days', '90');
   `);
 
   saveDb();

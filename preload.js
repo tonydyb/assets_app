@@ -11,4 +11,8 @@ contextBridge.exposeInMainWorld('api', {
   addAssetType: (name) => ipcRenderer.invoke('addAssetType', name),
   deleteAssetType: (id) => ipcRenderer.invoke('deleteAssetType', id),
   modifyAssetType: (id, name) => ipcRenderer.invoke('modifyAssetType', id, name),
+  getSettings: () => ipcRenderer.invoke('getSettings'),
+  setSetting: (key, value) => ipcRenderer.invoke('setSetting', key, value),
+  getExchangeRates: () => ipcRenderer.invoke('getExchangeRates'),
+  upsertExchangeRate: (rate) => ipcRenderer.invoke('upsertExchangeRate', rate),
 });
