@@ -6,6 +6,9 @@ on:
       # "v" で始まる Tag 名の push だけをトリガーの対象にします (e.g., "v0.0.2")
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     env:
