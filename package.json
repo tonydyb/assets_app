@@ -1,19 +1,58 @@
 {
   "name": "assets-app",
+  "productName": "Asset Manager",
   "version": "0.4.6",
   "description": "Personal Asset Management Electron App",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "postinstall": "node ./scripts/create-data-dir.js"
+    "postinstall": "node ./scripts/create-data-dir.js",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^26.6.10"
+    "electron": "^26.6.10",
+    "electron-builder": "^24.13.3"
   },
   "dependencies": {
     "sql.js": "^1.8.0"
+  },
+  "build": {
+    "appId": "com.assetmanager.app",
+    "productName": "Asset Manager",
+    "files": [
+      "**/*",
+      "!dist/**",
+      "!docs/**",
+      "!assets/icon/AssetManager.iconset/**",
+      "!assets/icon/tmp/**"
+    ],
+    "directories": {
+      "buildResources": "assets/icon"
+    },
+    "mac": {
+      "icon": "assets/icon/asset-manager.icns",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "icon": "assets/icon/asset-manager.ico",
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    },
+    "linux": {
+      "icon": "assets/icon/png",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    }
   }
 }

@@ -4,9 +4,11 @@ const path = require('path');
 const assetService = require('./main/assetService');
 
 function createWindow() {
+  const iconPath = path.join(__dirname, 'assets', 'icon', 'icon.png');
   const win = new BrowserWindow({
     width: 1000,
     height: 720,
+    icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -27,6 +29,10 @@ app.whenReady().then(async () => {
   }
 
   createWindow();
+
+  if (process.platform === 'darwin' && app.dock) {
+    app.dock.setIcon(path.join(__dirname, 'assets', 'icon', 'icon-1024.png'));
+  }
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
