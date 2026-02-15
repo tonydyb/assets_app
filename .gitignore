@@ -1,5 +1,5 @@
 # Local SQLite database
-data/assets.db
+data/
 
 .DS_Store
 .env

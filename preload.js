@@ -15,4 +15,6 @@ contextBridge.exposeInMainWorld('api', {
   setSetting: (key, value) => ipcRenderer.invoke('setSetting', key, value),
   getExchangeRates: () => ipcRenderer.invoke('getExchangeRates'),
   upsertExchangeRate: (rate) => ipcRenderer.invoke('upsertExchangeRate', rate),
+  exportDatabase: () => ipcRenderer.invoke('exportDatabase'),
+  importDatabase: () => ipcRenderer.invoke('importDatabase'),
 });
