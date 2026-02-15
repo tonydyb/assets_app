@@ -29,7 +29,6 @@
     'en-US': {
       dashboard: 'Dashboard',
       totalAsset: 'Total Asset',
-      navigation: 'Navigation',
       viewAssets: 'View Assets',
       addAsset: 'Add Asset',
       viewChart: 'View Chart',
@@ -63,7 +62,6 @@
       deleteTypeConfirm: 'Are you sure you want to delete this asset type?',
       chartTitle: 'Asset Chart',
       settingsTitle: 'Settings',
-      settingsDesc: 'Language / display currency / exchange rates',
       language: 'Language',
       displayCurrency: 'Display Currency',
       fxCacheTtlDays: 'FX Cache TTL (days)',
@@ -73,7 +71,7 @@
       pair: 'Pair',
       rate: 'Rate',
       updatedAt: 'Updated At',
-      saveRatesToDb: 'Save Rates to DB',
+      saveRatesToDb: 'Save Rates',
       backToDashboard: 'Back to Dashboard',
       settingsSaved: 'Settings saved.',
       ratesSaved: 'Exchange rates saved to database.',
@@ -82,7 +80,6 @@
       prev: 'Prev',
       next: 'Next',
       of: 'of',
-      dataTransfer: 'Data Transfer',
       exportData: 'Export Data',
       importData: 'Import Data',
       exportSuccess: 'Database exported:',
@@ -93,7 +90,6 @@
     'zh-CN': {
       dashboard: '首页',
       totalAsset: '总资产',
-      navigation: '导航',
       viewAssets: '查看资产',
       addAsset: '新增资产',
       viewChart: '查看图表',
@@ -127,7 +123,6 @@
       deleteTypeConfirm: '确认删除该资产类型吗？',
       chartTitle: '资产图表',
       settingsTitle: '设置',
-      settingsDesc: '语言 / 显示币种 / 汇率配置',
       language: '语言',
       displayCurrency: '显示币种',
       fxCacheTtlDays: '汇率缓存有效期（天）',
@@ -137,7 +132,7 @@
       pair: '币种对',
       rate: '汇率',
       updatedAt: '更新时间',
-      saveRatesToDb: '保存汇率到数据库',
+      saveRatesToDb: '保存汇率',
       backToDashboard: '返回首页',
       settingsSaved: '设置已保存。',
       ratesSaved: '汇率已保存到数据库。',
@@ -146,7 +141,6 @@
       prev: '上一页',
       next: '下一页',
       of: '/',
-      dataTransfer: '数据迁移',
       exportData: '导出数据',
       importData: '导入数据',
       exportSuccess: '数据库已导出：',
@@ -156,7 +150,6 @@
     'ja-JP': {
       dashboard: 'ダッシュボード',
       totalAsset: '総資産',
-      navigation: 'ナビゲーション',
       viewAssets: '資産一覧',
       addAsset: '資産追加',
       viewChart: 'チャート',
@@ -190,7 +183,6 @@
       deleteTypeConfirm: 'この資産タイプを削除しますか？',
       chartTitle: '資産チャート',
       settingsTitle: '設定',
-      settingsDesc: '言語 / 表示通貨 / 為替レート',
       language: '言語',
       displayCurrency: '表示通貨',
       fxCacheTtlDays: '為替キャッシュ有効日数',
@@ -200,7 +192,7 @@
       pair: '通貨ペア',
       rate: 'レート',
       updatedAt: '更新時刻',
-      saveRatesToDb: 'レートをDBに保存',
+      saveRatesToDb: 'レートを保存',
       backToDashboard: 'ダッシュボードへ戻る',
       settingsSaved: '設定を保存しました。',
       ratesSaved: '為替レートを保存しました。',
@@ -209,7 +201,6 @@
       prev: '前へ',
       next: '次へ',
       of: '/',
-      dataTransfer: 'データ移行',
       exportData: 'データをエクスポート',
       importData: 'データをインポート',
       exportSuccess: 'データベースをエクスポートしました:',
@@ -389,16 +380,7 @@
           </div>
         </section>
 
-        <section className="nav-section">
-          <h2>{t('navigation')}</h2>
-          <nav>
-            <a href="assets.html">{t('viewAssets')}</a>
-            <a href="add_asset.html">{t('addAsset')}</a>
-            <a href="chart.html">{t('viewChart')}</a>
-            <a href="asset_types.html">{t('assetTypes')}</a>
-            <a href="settings.html">{t('settings')}</a>
-          </nav>
-        </section>
+        <MainNav t={t} />
 
         <section>
           <h2>{t('recentAssets')}</h2>
@@ -435,6 +417,30 @@
             : ''}
         </div>
       </div>
+    );
+  }
+
+  function MainNav({ t }) {
+    return (
+      <section style={{ margin: '6px 0 10px' }}>
+        <nav
+          style={{
+            margin: 0,
+            display: 'flex',
+            gap: '14px',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <a href="dashboard.html" style={{ whiteSpace: 'nowrap' }}>{t('dashboard')}</a>
+          <a href="assets.html" style={{ whiteSpace: 'nowrap' }}>{t('viewAssets')}</a>
+          <a href="add_asset.html" style={{ whiteSpace: 'nowrap' }}>{t('addAsset')}</a>
+          <a href="chart.html" style={{ whiteSpace: 'nowrap' }}>{t('viewChart')}</a>
+          <a href="asset_types.html" style={{ whiteSpace: 'nowrap' }}>{t('assetTypes')}</a>
+          <a href="settings.html" style={{ whiteSpace: 'nowrap' }}>{t('settings')}</a>
+        </nav>
+      </section>
     );
   }
 
@@ -537,125 +543,135 @@
     }
 
     return (
-      <div>
+      <div style={{ maxWidth: '920px', margin: '0 auto' }}>
         <h1>{t('settingsTitle')}</h1>
-        <p>{t('settingsDesc')}</p>
+        <MainNav t={t} />
 
-        <section style={{ display: 'grid', gap: '10px', maxWidth: '560px' }}>
-          <label>
-            {t('language')}{' '}
-            <select
-              value={settings.language}
-              onChange={(ev) => {
-                const nextLang = ev.target.value;
-                setSettings({ ...settings, language: nextLang });
-                setUiLanguage(nextLang);
-              }}
-            >
-              <option value="zh-CN">简体中文 (zh-CN)</option>
-              <option value="en-US">English (en-US)</option>
-              <option value="ja-JP">日本語 (ja-JP)</option>
-            </select>
-          </label>
+        <div style={{ display: 'grid', gap: '18px' }}>
+          <section style={{ margin: 0, border: '1px solid #d9d9d9', borderRadius: '10px', padding: '16px 18px' }}>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+              <div style={{ flex: '1 1 520px', minWidth: '280px' }}>
+                <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+                  <label>
+                    {t('language')}{' '}
+                    <select
+                      value={settings.language}
+                      onChange={(ev) => {
+                        const nextLang = ev.target.value;
+                        setSettings({ ...settings, language: nextLang });
+                        setUiLanguage(nextLang);
+                      }}
+                    >
+                      <option value="zh-CN">简体中文 (zh-CN)</option>
+                      <option value="en-US">English (en-US)</option>
+                      <option value="ja-JP">日本語 (ja-JP)</option>
+                    </select>
+                  </label>
 
-          <label>
-            {t('displayCurrency')}{' '}
-            <select
-              value={settings.displayCurrency}
-              onChange={(ev) => setSettings({ ...settings, displayCurrency: ev.target.value })}
-            >
-              <option value="JPY">JPY</option>
-              <option value="CNY">CNY</option>
-              <option value="USD">USD</option>
-            </select>
-          </label>
+                  <label>
+                    {t('displayCurrency')}{' '}
+                    <select
+                      value={settings.displayCurrency}
+                      onChange={(ev) => setSettings({ ...settings, displayCurrency: ev.target.value })}
+                    >
+                      <option value="JPY">JPY</option>
+                      <option value="CNY">CNY</option>
+                      <option value="USD">USD</option>
+                    </select>
+                  </label>
 
-          <label>
-            {t('fxCacheTtlDays')}{' '}
-            <input
-              type="number"
-              min="1"
-              value={settings.fxCacheTtlDays}
-              onChange={(ev) => setSettings({ ...settings, fxCacheTtlDays: ev.target.value })}
-            />
-          </label>
+                  <label>
+                    {t('fxCacheTtlDays')}{' '}
+                    <input
+                      type="number"
+                      min="1"
+                      value={settings.fxCacheTtlDays}
+                      onChange={(ev) => setSettings({ ...settings, fxCacheTtlDays: ev.target.value })}
+                    />
+                  </label>
+                </div>
+              </div>
+              <div style={{ marginBottom: '2px' }}>
+                <button type="button" onClick={saveBaseSettings}>
+                  {t('saveSettings')}
+                </button>
+              </div>
+            </div>
+          </section>
 
-          <button type="button" style={{ width: 'fit-content' }} onClick={saveBaseSettings}>
-            {t('saveSettings')}
-          </button>
-        </section>
+          <section style={{ margin: 0, border: '1px solid #d9d9d9', borderRadius: '10px', padding: '16px 18px' }}>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+              <div style={{ flex: '1 1 620px', minWidth: '280px' }}>
+                <p>{t('supportedCurrencies')}</p>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>{t('pair')}</th>
+                      <th>{t('rate')}</th>
+                      <th>{t('updatedAt')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1 CNY = ? JPY</td>
+                      <td>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={draftRates['CNY->JPY']}
+                          onChange={(ev) => setDraftRates({ ...draftRates, 'CNY->JPY': ev.target.value })}
+                        />
+                      </td>
+                      <td>{findUpdatedAt('CNY', 'JPY')}</td>
+                    </tr>
+                    <tr>
+                      <td>1 USD = ? JPY</td>
+                      <td>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={draftRates['USD->JPY']}
+                          onChange={(ev) => setDraftRates({ ...draftRates, 'USD->JPY': ev.target.value })}
+                        />
+                      </td>
+                      <td>{findUpdatedAt('USD', 'JPY')}</td>
+                    </tr>
+                    <tr>
+                      <td>1 USD = ? CNY</td>
+                      <td>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={draftRates['USD->CNY']}
+                          onChange={(ev) => setDraftRates({ ...draftRates, 'USD->CNY': ev.target.value })}
+                        />
+                      </td>
+                      <td>{findUpdatedAt('USD', 'CNY')}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style={{ marginBottom: '2px' }}>
+                <button type="button" onClick={saveRates}>
+                  {t('saveRatesToDb')}
+                </button>
+              </div>
+            </div>
+          </section>
 
-        <section style={{ marginTop: '18px', maxWidth: '760px' }}>
-          <h3>{t('exchangeRatesManual')}</h3>
-          <p>{t('supportedCurrencies')}</p>
-          <table>
-            <thead>
-              <tr>
-                <th>{t('pair')}</th>
-                <th>{t('rate')}</th>
-                <th>{t('updatedAt')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1 CNY = ? JPY</td>
-                <td>
-                  <input
-                    type="number"
-                    step="0.000001"
-                    value={draftRates['CNY->JPY']}
-                    onChange={(ev) => setDraftRates({ ...draftRates, 'CNY->JPY': ev.target.value })}
-                  />
-                </td>
-                <td>{findUpdatedAt('CNY', 'JPY')}</td>
-              </tr>
-              <tr>
-                <td>1 USD = ? JPY</td>
-                <td>
-                  <input
-                    type="number"
-                    step="0.000001"
-                    value={draftRates['USD->JPY']}
-                    onChange={(ev) => setDraftRates({ ...draftRates, 'USD->JPY': ev.target.value })}
-                  />
-                </td>
-                <td>{findUpdatedAt('USD', 'JPY')}</td>
-              </tr>
-              <tr>
-                <td>1 USD = ? CNY</td>
-                <td>
-                  <input
-                    type="number"
-                    step="0.000001"
-                    value={draftRates['USD->CNY']}
-                    onChange={(ev) => setDraftRates({ ...draftRates, 'USD->CNY': ev.target.value })}
-                  />
-                </td>
-                <td>{findUpdatedAt('USD', 'CNY')}</td>
-              </tr>
-            </tbody>
-          </table>
-          <button type="button" onClick={saveRates}>
-            {t('saveRatesToDb')}
-          </button>
-          {message ? <p>{message}</p> : null}
-        </section>
+          <section style={{ margin: 0, border: '1px solid #d9d9d9', borderRadius: '10px', padding: '16px 18px' }}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button type="button" onClick={onExportData}>
+                {t('exportData')}
+              </button>
+              <button type="button" onClick={onImportData}>
+                {t('importData')}
+              </button>
+            </div>
+          </section>
+        </div>
 
-        <section style={{ marginTop: '18px', maxWidth: '760px' }}>
-          <h3>{t('dataTransfer')}</h3>
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <button type="button" onClick={onExportData}>
-              {t('exportData')}
-            </button>
-            <button type="button" onClick={onImportData}>
-              {t('importData')}
-            </button>
-          </div>
-        </section>
-
-        <p style={{ marginTop: '12px' }}>
-          <a href="dashboard.html">{t('backToDashboard')}</a>
-        </p>
+        {message ? <p style={{ marginTop: '12px' }}>{message}</p> : null}
       </div>
     );
   }
@@ -736,7 +752,7 @@
     return (
       <div>
         <h1>{t('assets')}</h1>
-        <a href="add_asset.html">{t('addAsset')}</a> <a href="dashboard.html">{t('dashboard')}</a>
+        <MainNav t={t} />
 
         {editing ? (
           <div id="editAssetForm" style={{ margin: '20px 0', padding: '15px', border: '1px solid #ccc' }}>
@@ -923,6 +939,7 @@
     return (
       <div>
         <h1>{t('addAssetTitle')}</h1>
+        <MainNav t={t} />
         <form id="addForm" onSubmit={onSubmit}>
           <label>
             {t('date')}{' '}
@@ -962,7 +979,7 @@
             <input
               id="amount"
               type="number"
-              step="0.01"
+              step="1"
               value={form.amount}
               onChange={(ev) => setForm({ ...form, amount: ev.target.value })}
             />
@@ -981,7 +998,6 @@
           </label>
           <button type="submit">{t('save')}</button>
         </form>
-        <a href="assets.html">{t('back')}</a>
       </div>
     );
   }
@@ -992,6 +1008,17 @@
     const [types, setTypes] = useState([]);
     const [newName, setNewName] = useState('');
     const [editing, setEditing] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 10;
+    const headerCellStyle = { padding: '8px 10px', lineHeight: '1.2' };
+    const cellStyle = { padding: '8px 10px', lineHeight: '1.2', verticalAlign: 'middle' };
+    const actionBtnStyle = {
+      padding: '6px 10px',
+      minHeight: 'auto',
+      lineHeight: '1.1',
+      marginRight: '6px',
+      marginBottom: '0',
+    };
 
     async function refresh() {
       const tt = await window.api.getAssetTypes();
@@ -1027,9 +1054,22 @@
       refresh();
     }
 
+    const totalPages = Math.max(1, Math.ceil(types.length / pageSize));
+    const pagedTypes = useMemo(() => {
+      const start = (currentPage - 1) * pageSize;
+      return types.slice(start, start + pageSize);
+    }, [types, currentPage]);
+
+    useEffect(() => {
+      if (currentPage > totalPages) {
+        setCurrentPage(totalPages);
+      }
+    }, [currentPage, totalPages]);
+
     return (
       <div>
         <h1>{t('assetTypesTitle')}</h1>
+        <MainNav t={t} />
         <form id="addTypeForm" onSubmit={addType}>
           <input
             id="typeName"
@@ -1060,25 +1100,24 @@
           </div>
         ) : null}
 
-        <a href="dashboard.html">{t('dashboard')}</a>
         <table>
           <thead>
             <tr>
-              <th>{t('id')}</th>
-              <th>{t('name')}</th>
-              <th>{t('actions')}</th>
+              <th style={headerCellStyle}>{t('id')}</th>
+              <th style={headerCellStyle}>{t('name')}</th>
+              <th style={headerCellStyle}>{t('actions')}</th>
             </tr>
           </thead>
           <tbody id="typeList">
-            {types.map((tt) => (
+            {pagedTypes.map((tt) => (
               <tr key={tt.id}>
-                <td>{String(tt.id)}</td>
-                <td>{tt.name}</td>
-                <td>
-                  <button className="edit" onClick={() => setEditing({ id: tt.id, name: tt.name })}>
+                <td style={cellStyle}>{String(tt.id)}</td>
+                <td style={cellStyle}>{tt.name}</td>
+                <td style={cellStyle}>
+                  <button style={actionBtnStyle} className="edit" onClick={() => setEditing({ id: tt.id, name: tt.name })}>
                     {t('edit')}
                   </button>{' '}
-                  <button className="del" onClick={() => deleteType(tt.id)}>
+                  <button style={actionBtnStyle} className="del" onClick={() => deleteType(tt.id)}>
                     {t('delete')}
                   </button>
                 </td>
@@ -1086,6 +1125,44 @@
             ))}
           </tbody>
         </table>
+        <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage <= 1}
+          >
+            {t('prev')}
+          </button>
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNo) => (
+              <button
+                key={pageNo}
+                type="button"
+                onClick={() => setCurrentPage(pageNo)}
+                style={{
+                  minHeight: 'auto',
+                  padding: '4px 8px',
+                  lineHeight: '1.1',
+                  background: pageNo === currentPage ? '#333' : '#fff',
+                  color: pageNo === currentPage ? '#fff' : '#333',
+                  border: '1px solid #bbb',
+                }}
+              >
+                {pageNo}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage >= totalPages}
+          >
+            {t('next')}
+          </button>
+          <span>
+            {t('page')} {currentPage} {t('of')} {totalPages}
+          </span>
+        </div>
       </div>
     );
   }
@@ -1198,6 +1275,7 @@
     return (
       <div>
         <h1>{`${t('chartTitle')} (${displayCurrency})`}</h1>
+        <MainNav t={t} />
         <canvas
           id="chart"
           ref={canvasRef}
@@ -1205,9 +1283,6 @@
           height={400}
           style={{ border: '1px solid #ddd', display: 'block', marginBottom: '8px', maxWidth: '100%' }}
         />
-        <div style={{ width: '100%', textAlign: 'right', marginTop: '8px' }}>
-          <a href="dashboard.html">{t('back')}</a>
-        </div>
       </div>
     );
   }
