@@ -22,36 +22,6 @@
 - React 18（本地静态运行时文件）
 - Vanilla CSS（MVP.css）
 
-## 项目结构
-
-```text
-assets_app/
-├─ main.js                     # Electron 主入口与 IPC 注册
-├─ preload.js                  # 安全桥接 API（window.api）
-├─ main/
-│  ├─ assetService.js          # 业务逻辑
-│  ├─ database.js              # sql.js 封装与持久化
-│  └─ config.js                # 配置（如汇率）
-├─ renderer/
-│  ├─ dashboard.html
-│  ├─ assets.html
-│  ├─ add_asset.html
-│  ├─ asset_types.html
-│  ├─ chart.html
-│  ├─ app-react.js             # React 页面逻辑
-│  ├─ vendor/                  # React 运行时静态文件
-│  └─ mvp.css
-├─ data/
-│  └─ assets.db                # SQLite 数据文件
-└─ docs/
-   ├─ 01.SRS.md
-   ├─ 02.HLD.md
-   ├─ 03.DDL.md
-   ├─ 04.LLD.md
-   ├─ 05.UI 设计文档.md
-   └─ ADR/
-```
-
 ## 本地运行
 
 ### 1. 安装依赖
@@ -66,27 +36,13 @@ npm install
 npm start
 ```
 
-## 数据说明
+## macOS DMG 安装提示
 
-- 数据库存储位置：`data/assets.db`
-- 表：`asset_types`、`assets`
-- 应用写操作后会持久化数据库文件
+如果你从 GitHub Release 下载 `.dmg` 安装后遇到 “app is damaged and can’t be opened” 提示，可执行：
 
-## 文档
-
-- 需求：`/assets_app/docs/01.SRS.md`
-- 架构：`/assets_app/docs/02.HLD.md`
-- 数据库：`/assets_app/docs/03.DDL.md`
-- 低级设计：`/assets_app/docs/04.LLD.md`
-- UI 设计：`/assets_app/docs/05.UI 设计文档.md`
-- ADR：`/assets_app/docs/ADR`
-
-## Roadmap
-
-- 统一错误码与错误处理规范
-- 数据导出（CSV）
-- 备份/恢复能力
-- 数据筛选与分页
+```bash
+xattr -dr com.apple.quarantine /Applications/assets-app.app
+```
 
 ## License
 

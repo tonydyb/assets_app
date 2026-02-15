@@ -22,36 +22,6 @@ Electron + SQLite（`sql.js`）+ React で構築した、ローカル実行型�
 - React 18（ローカル静的ランタイム）
 - Vanilla CSS（MVP.css）
 
-## プロジェクト構成
-
-```text
-assets_app/
-├─ main.js                     # Electron エントリと IPC 登録
-├─ preload.js                  # セキュアブリッジ API（window.api）
-├─ main/
-│  ├─ assetService.js          # ビジネスロジック
-│  ├─ database.js              # sql.js ラッパーと永続化
-│  └─ config.js                # 設定（例: 為替レート）
-├─ renderer/
-│  ├─ dashboard.html
-│  ├─ assets.html
-│  ├─ add_asset.html
-│  ├─ asset_types.html
-│  ├─ chart.html
-│  ├─ app-react.js             # React UI ロジック
-│  ├─ vendor/                  # ローカル React ランタイム
-│  └─ mvp.css
-├─ data/
-│  └─ assets.db                # SQLite DB ファイル
-└─ docs/
-   ├─ 01.SRS.md
-   ├─ 02.HLD.md
-   ├─ 03.DDL.md
-   ├─ 04.LLD.md
-   ├─ 05.UI 设计文档.md
-   └─ ADR/
-```
-
 ## ローカル実行
 
 ### 1. 依存関係をインストール
@@ -66,27 +36,13 @@ npm install
 npm start
 ```
 
-## データ
+## macOS DMG インストール時の注意
 
-- DB ファイル: `data/assets.db`
-- テーブル: `asset_types`, `assets`
-- 書き込み操作後に DB ファイルへ永続化
+GitHub Release の `.dmg` からインストール後に「app is damaged and can’t be opened」が表示される場合は、次を実行してください。
 
-## ドキュメント
-
-- 要件: `/assets_app/docs/01.SRS.md`
-- アーキテクチャ: `/assets_app/docs/02.HLD.md`
-- データベース: `/assets_app/docs/03.DDL.md`
-- 詳細設計: `/assets_app/docs/04.LLD.md`
-- UI 設計: `/assets_app/docs/05.UI 设计文档.md`
-- ADR: `/assets_app/docs/ADR`
-
-## Roadmap
-
-- エラーコードとエラーハンドリング規約の統一
-- CSV エクスポート
-- バックアップ/リストア
-- フィルタリングとページネーション
+```bash
+xattr -dr com.apple.quarantine /Applications/assets-app.app
+```
 
 ## License
 
