@@ -1,6 +1,9 @@
 # Assets App
 
-[中文](README.md) | English
+[中文](README.md) | [English](README.en.md) | [日本語](README.ja.md)
+
+![sample1](docs/img/sample1.png)
+![sample2](docs/img/sample2.png)
 
 A local desktop personal asset management app built with Electron + SQLite (`sql.js`) + React.
 
