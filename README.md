@@ -1,4 +1,7 @@
-[中文](README.md) | [English](README.en.md)
+[中文](README.md) | [English](README.en.md) | [日本語](README.ja.md)
+
+![sample1](docs/img/sample1.png)
+![sample2](docs/img/sample2.png)
 
 # Assets App
 
