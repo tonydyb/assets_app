@@ -41,7 +41,7 @@ npm start
 如果你从 GitHub Release 下载 `.dmg` 安装后遇到 “app is damaged and can’t be opened” 提示，可执行：
 
 ```bash
-xattr -dr com.apple.quarantine /Applications/assets-app.app
+xattr -dr com.apple.quarantine /Applications/Asset\ Manager.app/
 ```
 
 ## License
