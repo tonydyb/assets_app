@@ -8,7 +8,11 @@
     "start": "electron .",
     "postinstall": "node ./scripts/create-data-dir.js",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "devbox:install": "devbox run -- npm install",
+    "devbox:start": "devbox run -- npm start",
+    "devbox:pack": "devbox run -- npm run pack",
+    "devbox:dist": "devbox run -- npm run dist"
   },
   "keywords": [],
   "author": "",
