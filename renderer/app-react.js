@@ -41,6 +41,8 @@
       currency: 'Currency',
       partial: 'partial',
       settings: 'Settings',
+      overview: 'Overview',
+      charts: 'Charts',
       updated: 'updated',
       excluded: 'excluded',
       assets: 'Assets',
@@ -86,6 +88,19 @@
       importWillRestart: 'Database imported. The app will restart.',
       importDataConfirm:
         'Importing will overwrite current data. The app will restart after import. Continue?',
+      dashboardSubtitle: 'Detailed overview of your global wealth across currencies and regions.',
+      addAssetSubtitle: 'Record a new asset snapshot with date, class, amount, and currency.',
+      assetTypesSubtitle: 'Manage categories used to classify assets.',
+      settingsSubtitle: 'Manage your global preferences and financial categories.',
+      chartSubtitle: 'High-fidelity analysis of historical growth trends across multiple currencies.',
+      preferences: 'Preferences',
+      localData: 'Local Data',
+      exportDataDesc: 'Export local SQLite database',
+      importDataDesc: 'Validate, backup, import, then restart',
+      quickAction: 'Quick Action',
+      assetAllocation: 'Asset Allocation',
+      total: 'Total',
+      historicalGrowth: 'Historical Growth',
     },
     'zh-CN': {
       dashboard: '首页',
@@ -102,6 +117,8 @@
       currency: '币种',
       partial: '部分统计',
       settings: '设置',
+      overview: '首页',
+      charts: '图表',
       updated: '更新时间',
       excluded: '未计入',
       assets: '资产列表',
@@ -146,6 +163,19 @@
       exportSuccess: '数据库已导出：',
       importWillRestart: '数据库已导入，应用即将重启。',
       importDataConfirm: '导入会覆盖当前数据，并在完成后重启应用。是否继续？',
+      dashboardSubtitle: '按币种与地区汇总查看当前资产概况。',
+      addAssetSubtitle: '记录一条新的资产快照，包含日期、类型、金额和币种。',
+      assetTypesSubtitle: '管理用于资产分类的类型。',
+      settingsSubtitle: '管理全局偏好、汇率和本地数据。',
+      chartSubtitle: '查看跨币种折算后的历史资产趋势。',
+      preferences: '偏好设置',
+      localData: '本地数据',
+      exportDataDesc: '导出本地 SQLite 数据库',
+      importDataDesc: '校验、备份、导入并重启应用',
+      quickAction: '快捷操作',
+      assetAllocation: '资产分布',
+      total: '合计',
+      historicalGrowth: '历史增长',
     },
     'ja-JP': {
       dashboard: 'ダッシュボード',
@@ -162,6 +192,8 @@
       currency: '通貨',
       partial: '一部集計',
       settings: '設定',
+      overview: '概要',
+      charts: 'チャート',
       updated: '更新',
       excluded: '除外',
       assets: '資産',
@@ -207,6 +239,19 @@
       importWillRestart: 'データベースをインポートしました。アプリを再起動します。',
       importDataConfirm:
         'インポートすると現在のデータを上書きし、完了後にアプリが再起動します。続行しますか？',
+      dashboardSubtitle: '通貨と地域をまたいだ現在の資産概要を確認します。',
+      addAssetSubtitle: '日付、タイプ、金額、通貨を指定して新しい資産スナップショットを記録します。',
+      assetTypesSubtitle: '資産分類に使用するタイプを管理します。',
+      settingsSubtitle: '全体設定、為替レート、ローカルデータを管理します。',
+      chartSubtitle: '表示通貨に換算した資産推移を確認します。',
+      preferences: '基本設定',
+      localData: 'ローカルデータ',
+      exportDataDesc: 'ローカル SQLite データベースを書き出し',
+      importDataDesc: '検証、バックアップ、インポート後に再起動',
+      quickAction: 'クイック操作',
+      assetAllocation: '資産配分',
+      total: '合計',
+      historicalGrowth: '資産推移',
     },
   };
 
@@ -326,6 +371,21 @@
       USD: '$',
     };
     const today = new Date().toLocaleDateString();
+    const allocation = useMemo(() => {
+      const totals = {};
+      rows.forEach((row) => {
+        const key = row.type || t('type');
+        totals[key] = (totals[key] || 0) + toNumber(row.amount, 0);
+      });
+      const sum = Object.values(totals).reduce((acc, value) => acc + value, 0);
+      return Object.entries(totals)
+        .map(([name, value]) => ({
+          name,
+          percent: sum > 0 ? Math.round((value / sum) * 100) : 0,
+        }))
+        .sort((a, b) => b.percent - a.percent)
+        .slice(0, 6);
+    }, [rows, t]);
 
     useEffect(() => {
       (async () => {
@@ -369,22 +429,39 @@
     }, [setLanguage]);
 
     return (
-      <div>
-        <section className="total-section">
-          <div className="total-row">
-            <h2>{t('totalAsset')}</h2>
-            <div id="totalAsset">
-              {`${currencySymbol[displayCurrency] || ''}${conversionMeta.total.toLocaleString()} ${displayCurrency}`}
+      <div className="page-stack">
+        <section className="hero-card">
+          <div className="eyebrow">{t('totalAsset')}</div>
+          <div className="hero-total">
+            <span id="totalAsset">
+              {`${currencySymbol[displayCurrency] || ''}${conversionMeta.total.toLocaleString()}`}
               {conversionMeta.missingPairs.length > 0 ? ` (${t('partial')})` : ''}
+            </span>
+            <span className="hero-currency">{displayCurrency}</span>
+          </div>
+          <div className="hero-metrics">
+            <div>
+              <span className="metric-label">FX</span>
+              <strong>{String(conversionMeta.missingPairs.length > 0 ? 'missing' : fxMeta.status || 'ok').toUpperCase()}</strong>
+            </div>
+            <div>
+              <span className="metric-label">{t('updated')}</span>
+              <strong>{fxUpdatedAt}</strong>
+            </div>
+            <div>
+              <span className="metric-label">{t('currency')}</span>
+              <strong>{displayCurrency}</strong>
             </div>
           </div>
         </section>
 
-        <MainNav t={t} />
-
-        <section>
-          <h2>{t('recentAssets')}</h2>
-          <table id="recentAssets">
+        <section className="app-card">
+          <div className="card-header">
+            <h2>{t('recentAssets')}</h2>
+            <a className="text-link" href="assets.html">{t('viewAssets')} →</a>
+          </div>
+          <div className="table-scroll">
+            <table id="recentAssets">
             <thead>
               <tr>
                 <th>{t('date')}</th>
@@ -398,17 +475,49 @@
               {rows.map((r) => (
                 <tr key={r.id || `${r.date}-${r.name}`}>
                   <td>{r.date || ''}</td>
-                  <td>{r.type || ''}</td>
+                  <td><span className="type-pill">{r.type || ''}</span></td>
                   <td>{r.name || ''}</td>
                   <td>{formatAmount(r.amount || 0)}</td>
                   <td>{r.currency || ''}</td>
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </section>
 
-        <div style={{ marginTop: '16px', fontSize: '12px', color: '#666' }}>
+        <div className="dashboard-actions">
+          <a className="info-card" href="chart.html">
+            <span className="metric-label">{t('charts')}</span>
+            <strong>{t('viewChart')}</strong>
+          </a>
+          <a className="info-card dark" href="add_asset.html">
+            <span className="metric-label">{t('quickAction')}</span>
+            <strong>{t('addAsset')}</strong>
+          </a>
+        </div>
+
+        <section className="app-card allocation-card">
+          <div className="card-header">
+            <h2>{t('assetAllocation')}</h2>
+          </div>
+          <div className="allocation-preview">
+            <div className="allocation-ring">
+              <span>{t('total')}</span>
+              <strong>100%</strong>
+            </div>
+            <div className="allocation-list">
+              {allocation.map((item, index) => (
+                <div key={`${item.name}-${index}`} className="allocation-row">
+                  <span><i />{item.name}</span>
+                  <strong>{item.percent}%</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <div className="inline-status">
           {today} · FX:{' '}
           {String(conversionMeta.missingPairs.length > 0 ? 'missing' : fxMeta.status || 'ok').toUpperCase()} ·{' '}
           {t('updated')}: {fxUpdatedAt}
@@ -421,26 +530,68 @@
   }
 
   function MainNav({ t }) {
+    const active = pageName();
+    const links = [
+      ['dashboard', 'dashboard.html', 'overview'],
+      ['assets', 'assets.html', 'assets'],
+      ['add_asset', 'add_asset.html', 'addAsset'],
+      ['chart', 'chart.html', 'charts'],
+      ['asset_types', 'asset_types.html', 'assetTypes'],
+      ['settings', 'settings.html', 'settings'],
+    ];
     return (
-      <section style={{ margin: '6px 0 10px' }}>
-        <nav
-          style={{
-            margin: 0,
-            display: 'flex',
-            gap: '14px',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <a href="dashboard.html" style={{ whiteSpace: 'nowrap' }}>{t('dashboard')}</a>
-          <a href="assets.html" style={{ whiteSpace: 'nowrap' }}>{t('viewAssets')}</a>
-          <a href="add_asset.html" style={{ whiteSpace: 'nowrap' }}>{t('addAsset')}</a>
-          <a href="chart.html" style={{ whiteSpace: 'nowrap' }}>{t('viewChart')}</a>
-          <a href="asset_types.html" style={{ whiteSpace: 'nowrap' }}>{t('assetTypes')}</a>
-          <a href="settings.html" style={{ whiteSpace: 'nowrap' }}>{t('settings')}</a>
+      <header className="topbar">
+        <a className="brand" href="dashboard.html">Asset Manager</a>
+        <nav className="main-nav" aria-label="Main navigation">
+          {links.map(([key, href, labelKey]) => (
+            <a key={key} className={active === key ? 'active' : ''} href={href}>
+              {t(labelKey)}
+            </a>
+          ))}
         </nav>
-      </section>
+      </header>
+    );
+  }
+
+  function StatusFooter({ language }) {
+    const t = (key) => translate(language, key);
+    const [state, setState] = useState({ status: 'ok', updatedAt: '-' });
+
+    useEffect(() => {
+      (async () => {
+        try {
+          const rates = await window.api.getExchangeRates();
+          const latest = (rates || [])
+            .map((r) => r.updated_at)
+            .filter(Boolean)
+            .sort()
+            .pop();
+          setState({ status: (rates || []).length > 0 ? 'ok' : 'missing', updatedAt: latest || '-' });
+        } catch (err) {
+          setState({ status: 'missing', updatedAt: '-' });
+        }
+      })();
+    }, []);
+
+    return (
+      <footer className="status-footer">
+        <span>© 2026 Asset Manager.</span>
+        <span className={`fx-pill fx-${state.status}`}>
+          FX Rate: {String(state.status).toUpperCase()}
+        </span>
+        <span>{t('updated')}: {state.updatedAt}</span>
+      </footer>
+    );
+  }
+
+  function AppShell({ children, language }) {
+    const t = (key) => translate(language, key);
+    return (
+      <div className="app-shell">
+        <MainNav t={t} />
+        <main className="app-main">{children}</main>
+        <StatusFooter language={language} />
+      </div>
     );
   }
 
@@ -543,12 +694,16 @@
     }
 
     return (
-      <div style={{ maxWidth: '920px', margin: '0 auto' }}>
-        <h1>{t('settingsTitle')}</h1>
-        <MainNav t={t} />
-
-        <div style={{ display: 'grid', gap: '18px' }}>
-          <section style={{ margin: 0, border: '1px solid #d9d9d9', borderRadius: '10px', padding: '16px 18px' }}>
+      <div className="page-stack settings-page">
+        <div>
+          <h1>{t('settingsTitle')}</h1>
+          <p className="page-subtitle">{t('settingsSubtitle')}</p>
+        </div>
+        <div className="settings-grid">
+          <section className="app-card">
+            <div className="card-header">
+              <h2>{t('preferences')}</h2>
+            </div>
             <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
               <div style={{ flex: '1 1 520px', minWidth: '280px' }}>
                 <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
@@ -599,7 +754,10 @@
             </div>
           </section>
 
-          <section style={{ margin: 0, border: '1px solid #d9d9d9', borderRadius: '10px', padding: '16px 18px' }}>
+          <section className="app-card settings-wide">
+            <div className="card-header">
+              <h2>{t('exchangeRatesManual')}</h2>
+            </div>
             <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
               <div style={{ flex: '1 1 620px', minWidth: '280px' }}>
                 <p>{t('supportedCurrencies')}</p>
@@ -659,19 +817,24 @@
             </div>
           </section>
 
-          <section style={{ margin: 0, border: '1px solid #d9d9d9', borderRadius: '10px', padding: '16px 18px' }}>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <button type="button" onClick={onExportData}>
-                {t('exportData')}
+          <section className="app-card settings-wide">
+            <div className="card-header">
+              <h2>{t('localData')}</h2>
+            </div>
+            <div className="data-actions">
+              <button type="button" className="data-action-card" onClick={onExportData}>
+                <span>{t('exportDataDesc')}</span>
+                <strong>{t('exportData')}</strong>
               </button>
-              <button type="button" onClick={onImportData}>
-                {t('importData')}
+              <button type="button" className="data-action-card danger" onClick={onImportData}>
+                <span>{t('importDataDesc')}</span>
+                <strong>{t('importData')}</strong>
               </button>
             </div>
           </section>
         </div>
 
-        {message ? <p style={{ marginTop: '12px' }}>{message}</p> : null}
+        {message ? <p className="inline-status">{message}</p> : null}
       </div>
     );
   }
@@ -750,10 +913,14 @@
     }
 
     return (
-      <div>
-        <h1>{t('assets')}</h1>
-        <MainNav t={t} />
-
+      <div className="page-stack">
+        <div className="page-header">
+          <div>
+            <h1>{t('assets')}</h1>
+            <p className="page-subtitle">{t('dashboardSubtitle')}</p>
+          </div>
+          <a className="button-link" href="add_asset.html">{t('addAsset')}</a>
+        </div>
         {editing ? (
           <div id="editAssetForm" style={{ margin: '20px 0', padding: '15px', border: '1px solid #ccc' }}>
             <h3>{t('editAsset')}</h3>
@@ -822,6 +989,7 @@
           </div>
         ) : null}
 
+        <div className="app-card table-scroll">
         <table>
           <thead>
             <tr>
@@ -837,7 +1005,7 @@
             {pagedAssets.map((a) => (
               <tr key={a.id}>
                 <td style={cellStyle}>{a.date || ''}</td>
-                <td style={cellStyle}>{a.type || ''}</td>
+                <td style={cellStyle}><span className="type-pill">{a.type || ''}</span></td>
                 <td style={cellStyle}>{a.name || ''}</td>
                 <td style={cellStyle}>{formatAmount(a.amount || 0)}</td>
                 <td style={cellStyle}>{a.currency || ''}</td>
@@ -869,7 +1037,8 @@
             ))}
           </tbody>
         </table>
-        <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        </div>
+        <div className="pagination">
           <button
             type="button"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
@@ -937,9 +1106,13 @@
     }
 
     return (
-      <div>
-        <h1>{t('addAssetTitle')}</h1>
-        <MainNav t={t} />
+      <div className="page-stack">
+        <div className="page-header">
+          <div>
+            <h1>{t('addAssetTitle')}</h1>
+            <p className="page-subtitle">{t('addAssetSubtitle')}</p>
+          </div>
+        </div>
         <form id="addForm" onSubmit={onSubmit}>
           <label>
             {t('date')}{' '}
@@ -1067,9 +1240,13 @@
     }, [currentPage, totalPages]);
 
     return (
-      <div>
-        <h1>{t('assetTypesTitle')}</h1>
-        <MainNav t={t} />
+      <div className="page-stack">
+        <div className="page-header">
+          <div>
+            <h1>{t('assetTypesTitle')}</h1>
+            <p className="page-subtitle">{t('assetTypesSubtitle')}</p>
+          </div>
+        </div>
         <form id="addTypeForm" onSubmit={addType}>
           <input
             id="typeName"
@@ -1100,32 +1277,34 @@
           </div>
         ) : null}
 
-        <table>
-          <thead>
-            <tr>
-              <th style={headerCellStyle}>{t('id')}</th>
-              <th style={headerCellStyle}>{t('name')}</th>
-              <th style={headerCellStyle}>{t('actions')}</th>
-            </tr>
-          </thead>
-          <tbody id="typeList">
-            {pagedTypes.map((tt) => (
-              <tr key={tt.id}>
-                <td style={cellStyle}>{String(tt.id)}</td>
-                <td style={cellStyle}>{tt.name}</td>
-                <td style={cellStyle}>
-                  <button style={actionBtnStyle} className="edit" onClick={() => setEditing({ id: tt.id, name: tt.name })}>
-                    {t('edit')}
-                  </button>{' '}
-                  <button style={actionBtnStyle} className="del" onClick={() => deleteType(tt.id)}>
-                    {t('delete')}
-                  </button>
-                </td>
+        <div className="app-card table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style={headerCellStyle}>{t('id')}</th>
+                <th style={headerCellStyle}>{t('name')}</th>
+                <th style={headerCellStyle}>{t('actions')}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            </thead>
+            <tbody id="typeList">
+              {pagedTypes.map((tt) => (
+                <tr key={tt.id}>
+                  <td style={cellStyle}>{String(tt.id)}</td>
+                  <td style={cellStyle}>{tt.name}</td>
+                  <td style={cellStyle}>
+                    <button style={actionBtnStyle} className="edit" onClick={() => setEditing({ id: tt.id, name: tt.name })}>
+                      {t('edit')}
+                    </button>{' '}
+                    <button style={actionBtnStyle} className="del" onClick={() => deleteType(tt.id)}>
+                      {t('delete')}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="pagination">
           <button
             type="button"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
@@ -1203,17 +1382,12 @@
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         const w = (canvas.width = canvas.clientWidth || 800);
-        const h = (canvas.height = 420);
+        const h = (canvas.height = 360);
         ctx.clearRect(0, 0, w, h);
 
-        const margin = { top: 60, right: 30, bottom: 80, left: 70 };
+        const margin = { top: 34, right: 30, bottom: 64, left: 96 };
         const chartW = w - margin.left - margin.right;
         const chartH = h - margin.top - margin.bottom;
-
-        ctx.fillStyle = '#333';
-        ctx.font = 'bold 20px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(t('chartTitle'), w / 2, 32);
 
         const maxVal = Math.max(...values, 0);
         const niceMax = Math.max(10, Math.ceil(maxVal / 10) * 10);
@@ -1221,9 +1395,9 @@
         const step = Math.ceil(niceMax / ySteps);
         const displayMax = step * ySteps;
 
-        ctx.strokeStyle = '#e0e0e0';
+        ctx.strokeStyle = 'rgba(198,198,205,0.35)';
         ctx.lineWidth = 1;
-        ctx.font = '12px Arial';
+        ctx.font = '12px Inter, Arial';
         ctx.fillStyle = '#000';
         for (let i = 0; i <= ySteps; i++) {
           const val = i * step;
@@ -1240,7 +1414,20 @@
         const gap = Math.max(8, Math.floor((chartW * 0.08) / (barCount || 1)));
         const totalGap = gap * (barCount + 1);
         const barW = Math.max(8, (chartW - totalGap) / (barCount || 1));
-        const colors = ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f', '#edc949', '#af7aa1'];
+        const colors = ['#0b1c30', '#006c49', '#cba72f', '#76777d', '#d3e4fe', '#111827', '#5b6b88'];
+        function roundedBar(x, y, width, height, radius) {
+          const r = Math.min(radius, width / 2, height / 2);
+          ctx.beginPath();
+          ctx.moveTo(x + r, y);
+          ctx.lineTo(x + width - r, y);
+          ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+          ctx.lineTo(x + width, y + height);
+          ctx.lineTo(x, y + height);
+          ctx.lineTo(x, y + r);
+          ctx.quadraticCurveTo(x, y, x + r, y);
+          ctx.closePath();
+          ctx.fill();
+        }
 
         for (let i = 0; i < barCount; i++) {
           const val = values[i] || 0;
@@ -1248,10 +1435,10 @@
           const barH = (val / displayMax) * chartH;
           const y = margin.top + chartH - barH;
           ctx.fillStyle = colors[i % colors.length];
-          ctx.fillRect(x, y, barW, barH);
+          roundedBar(x, y, barW, barH, 8);
 
-          ctx.fillStyle = '#000';
-          ctx.font = '12px Arial';
+          ctx.fillStyle = '#0b1c30';
+          ctx.font = '700 12px Inter, Arial';
           ctx.textAlign = 'center';
           ctx.fillText(Math.round(val).toLocaleString(), x + barW / 2, y - 8);
 
@@ -1263,38 +1450,48 @@
         }
 
         ctx.save();
-        ctx.translate(margin.left - 48, margin.top + chartH / 2);
+        ctx.translate(margin.left - 62, margin.top + chartH / 2);
         ctx.rotate(-Math.PI / 2);
         ctx.textAlign = 'center';
-        ctx.font = '14px Arial';
+        ctx.font = '700 13px Inter, Arial';
         ctx.fillText(`${t('amount')} (${DISPLAY_CURRENCY})`, 0, 0);
         ctx.restore();
       })();
     }, [language]);
 
     return (
-      <div>
-        <h1>{`${t('chartTitle')} (${displayCurrency})`}</h1>
-        <MainNav t={t} />
-        <canvas
-          id="chart"
-          ref={canvasRef}
-          width={800}
-          height={400}
-          style={{ border: '1px solid #ddd', display: 'block', marginBottom: '8px', maxWidth: '100%' }}
-        />
+      <div className="page-stack">
+        <div className="page-header">
+          <div>
+            <h1>{`${t('chartTitle')} (${displayCurrency})`}</h1>
+            <p className="page-subtitle">{t('chartSubtitle')}</p>
+          </div>
+          <div className="currency-segment" aria-label={t('displayCurrency')}>
+            {SUPPORTED_CURRENCIES.map((currency) => (
+              <span key={currency} className={currency === displayCurrency ? 'active' : ''}>{currency}</span>
+            ))}
+          </div>
+        </div>
+        <section className="app-card chart-card">
+          <div className="card-header">
+            <h2>{t('historicalGrowth')}</h2>
+          </div>
+          <canvas id="chart" ref={canvasRef} width={800} height={400} />
+        </section>
       </div>
     );
   }
 
   function App() {
     const p = useMemo(pageName, []);
-    if (p === 'assets') return <AssetsPage />;
-    if (p === 'add_asset') return <AddAssetPage />;
-    if (p === 'asset_types') return <AssetTypesPage />;
-    if (p === 'chart') return <ChartPage />;
-    if (p === 'settings') return <SettingsPage />;
-    return <DashboardPage />;
+    const [language] = useAppLanguage();
+    let page = <DashboardPage />;
+    if (p === 'assets') page = <AssetsPage />;
+    if (p === 'add_asset') page = <AddAssetPage />;
+    if (p === 'asset_types') page = <AssetTypesPage />;
+    if (p === 'chart') page = <ChartPage />;
+    if (p === 'settings') page = <SettingsPage />;
+    return <AppShell language={language}>{page}</AppShell>;
   }
 
   const root = document.getElementById('root');
