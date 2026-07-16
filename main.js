@@ -68,20 +68,28 @@ ipcMain.handle('modifyAsset', async (event, asset) => {
   return assetService.modifyAsset(asset);
 });
 
+ipcMain.handle('getRebalanceTemplate', async () => {
+  return assetService.getRebalanceTemplate();
+});
+
+ipcMain.handle('saveRebalance', async (event, payload) => {
+  return assetService.saveRebalance(payload);
+});
+
 ipcMain.handle('getAssetTypes', async () => {
   return assetService.getAssetTypes();
 });
 
-ipcMain.handle('addAssetType', async (event, name) => {
-  return assetService.addAssetType(name);
+ipcMain.handle('addAssetType', async (event, payload, region) => {
+  return assetService.addAssetType(payload, region);
 });
 
 ipcMain.handle('deleteAssetType', async (event, id) => {
   return assetService.deleteAssetType(id);
 });
 
-ipcMain.handle('modifyAssetType', async (event, id, name) => {
-  return assetService.modifyAssetType(id, name);
+ipcMain.handle('modifyAssetType', async (event, payload, name, region) => {
+  return assetService.modifyAssetType(payload, name, region);
 });
 
 ipcMain.handle('getSettings', async () => {

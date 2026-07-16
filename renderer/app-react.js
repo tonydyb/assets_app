@@ -7,6 +7,7 @@
     if (p === 'assets.html') return 'assets';
     if (p === 'add_asset.html') return 'add_asset';
     if (p === 'asset_types.html') return 'asset_types';
+    if (p === 'rebalance.html') return 'rebalance';
     if (p === 'chart.html') return 'chart';
     if (p === 'settings.html') return 'settings';
     return 'dashboard';
@@ -23,6 +24,17 @@
     return n.toLocaleString();
   }
 
+  function formatDateOnly(v) {
+    if (!v) return '-';
+    const text = String(v);
+    const match = /^\d{4}-\d{2}-\d{2}/.exec(text);
+    if (match) return match[0];
+    const parsed = new Date(text);
+    if (Number.isNaN(parsed.getTime())) return text;
+    const local = new Date(parsed.getTime() - parsed.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 10);
+  }
+
   const SUPPORTED_CURRENCIES = ['JPY', 'CNY', 'USD'];
 
   const I18N = {
@@ -31,12 +43,14 @@
       totalAsset: 'Total Asset',
       viewAssets: 'View Assets',
       addAsset: 'Add Asset',
+      addNewRebalance: 'Add New Rebalance',
       viewChart: 'View Chart',
       assetTypes: 'Asset Types',
       recentAssets: 'Current Assets',
       date: 'Date',
       type: 'Type',
       name: 'Name',
+      region: 'Region',
       amount: 'Amount',
       currency: 'Currency',
       partial: 'partial',
@@ -58,6 +72,7 @@
       save: 'Save',
       assetTypesTitle: 'Asset Types',
       newTypeName: 'New type name',
+      newTypeRegion: 'Region (optional)',
       addType: 'Add Type',
       editAssetType: 'Edit Asset Type',
       id: 'ID',
@@ -77,6 +92,21 @@
       backToDashboard: 'Back to Dashboard',
       settingsSaved: 'Settings saved.',
       ratesSaved: 'Exchange rates saved to database.',
+      settingsSaveFailed: 'Failed to save preferences.',
+      ratesSaveFailed: 'Failed to save exchange rates.',
+      rebalanceTitle: 'New Rebalance',
+      rebalanceSubtitle: 'Copy the latest asset snapshot, set today as the new date, and enter the latest values.',
+      loadingRebalance: 'Loading rebalance template...',
+      rebalanceLoadFailed: 'Failed to load rebalance template. Please restart the app and try again.',
+      sourceSnapshot: 'Source Snapshot',
+      rebalanceDate: 'Rebalance Date',
+      latestAmount: 'Latest Amount',
+      saveRebalance: 'Save Rebalance',
+      noRebalanceTemplate: 'No previous asset snapshot is available.',
+      createAssetFirst: 'Create an asset first',
+      invalidRebalanceAmount: 'Please enter valid non-negative integer amounts.',
+      rebalanceSaved: 'Rebalance saved. Dashboard will use the new snapshot.',
+      rebalanceSaveFailed: 'Failed to save rebalance.',
       selectType: '-- Select Type --',
       page: 'Page',
       prev: 'Prev',
@@ -98,6 +128,7 @@
       exportDataDesc: 'Export local SQLite database',
       importDataDesc: 'Validate, backup, import, then restart',
       quickAction: 'Quick Action',
+      assetBreakdown: 'Asset Breakdown',
       assetAllocation: 'Asset Allocation',
       total: 'Total',
       historicalGrowth: 'Historical Growth',
@@ -107,12 +138,14 @@
       totalAsset: '总资产',
       viewAssets: '查看资产',
       addAsset: '新增资产',
+      addNewRebalance: '新增调仓',
       viewChart: '查看图表',
       assetTypes: '资产类型',
       recentAssets: '当前资产',
       date: '日期',
       type: '类型',
       name: '名称',
+      region: '地区',
       amount: '金额',
       currency: '币种',
       partial: '部分统计',
@@ -134,6 +167,7 @@
       save: '保存',
       assetTypesTitle: '资产类型',
       newTypeName: '新类型名称',
+      newTypeRegion: '地区（可选）',
       addType: '新增类型',
       editAssetType: '编辑资产类型',
       id: 'ID',
@@ -153,6 +187,21 @@
       backToDashboard: '返回首页',
       settingsSaved: '设置已保存。',
       ratesSaved: '汇率已保存到数据库。',
+      settingsSaveFailed: '保存偏好设置失败。',
+      ratesSaveFailed: '保存汇率失败。',
+      rebalanceTitle: '新增调仓',
+      rebalanceSubtitle: '复制最近一次资产快照，默认使用今天日期，录入每项资产的最新数值。',
+      loadingRebalance: '正在加载调仓模板...',
+      rebalanceLoadFailed: '加载调仓模板失败。请重启应用后重试。',
+      sourceSnapshot: '来源快照',
+      rebalanceDate: '调仓日期',
+      latestAmount: '最新金额',
+      saveRebalance: '保存调仓',
+      noRebalanceTemplate: '还没有可复制的资产快照。',
+      createAssetFirst: '先新增资产',
+      invalidRebalanceAmount: '请输入有效的非负整数金额。',
+      rebalanceSaved: '调仓已保存，首页将使用新的资产快照。',
+      rebalanceSaveFailed: '保存调仓失败。',
       selectType: '-- 选择类型 --',
       page: '第',
       prev: '上一页',
@@ -173,6 +222,7 @@
       exportDataDesc: '导出本地 SQLite 数据库',
       importDataDesc: '校验、备份、导入并重启应用',
       quickAction: '快捷操作',
+      assetBreakdown: '资产明细',
       assetAllocation: '资产分布',
       total: '合计',
       historicalGrowth: '历史增长',
@@ -182,12 +232,14 @@
       totalAsset: '総資産',
       viewAssets: '資産一覧',
       addAsset: '資産追加',
+      addNewRebalance: 'リバランス追加',
       viewChart: 'チャート',
       assetTypes: '資産タイプ',
       recentAssets: '現在の資産',
       date: '日付',
       type: 'タイプ',
       name: '名称',
+      region: '地域',
       amount: '金額',
       currency: '通貨',
       partial: '一部集計',
@@ -209,6 +261,7 @@
       save: '保存',
       assetTypesTitle: '資産タイプ',
       newTypeName: '新しいタイプ名',
+      newTypeRegion: '地域（任意）',
       addType: 'タイプ追加',
       editAssetType: '資産タイプ編集',
       id: 'ID',
@@ -228,6 +281,21 @@
       backToDashboard: 'ダッシュボードへ戻る',
       settingsSaved: '設定を保存しました。',
       ratesSaved: '為替レートを保存しました。',
+      settingsSaveFailed: '基本設定の保存に失敗しました。',
+      ratesSaveFailed: '為替レートの保存に失敗しました。',
+      rebalanceTitle: 'リバランス追加',
+      rebalanceSubtitle: '最新の資産スナップショットをコピーし、今日の日付で最新金額を入力します。',
+      loadingRebalance: 'リバランステンプレートを読み込み中...',
+      rebalanceLoadFailed: 'リバランステンプレートの読み込みに失敗しました。アプリを再起動して再試行してください。',
+      sourceSnapshot: 'コピー元スナップショット',
+      rebalanceDate: 'リバランス日',
+      latestAmount: '最新金額',
+      saveRebalance: 'リバランスを保存',
+      noRebalanceTemplate: 'コピーできる資産スナップショットがありません。',
+      createAssetFirst: '先に資産を追加',
+      invalidRebalanceAmount: '有効な非負整数の金額を入力してください。',
+      rebalanceSaved: 'リバランスを保存しました。ダッシュボードは新しいスナップショットを使用します。',
+      rebalanceSaveFailed: 'リバランスの保存に失敗しました。',
       selectType: '-- タイプを選択 --',
       page: 'ページ',
       prev: '前へ',
@@ -249,6 +317,7 @@
       exportDataDesc: 'ローカル SQLite データベースを書き出し',
       importDataDesc: '検証、バックアップ、インポート後に再起動',
       quickAction: 'クイック操作',
+      assetBreakdown: '資産内訳',
       assetAllocation: '資産配分',
       total: '合計',
       historicalGrowth: '資産推移',
@@ -370,7 +439,7 @@
       CNY: '¥',
       USD: '$',
     };
-    const today = new Date().toLocaleDateString();
+    const latestSnapshotDate = rows[0] && rows[0].date ? rows[0].date : '-';
     const allocation = useMemo(() => {
       const totals = {};
       rows.forEach((row) => {
@@ -423,7 +492,7 @@
             .filter(Boolean)
             .sort()
             .pop();
-          setFxUpdatedAt(latest || '-');
+          setFxUpdatedAt(formatDateOnly(latest));
         }
       })();
     }, [setLanguage]);
@@ -455,76 +524,74 @@
           </div>
         </section>
 
-        <section className="app-card">
-          <div className="card-header">
-            <h2>{t('recentAssets')}</h2>
-            <a className="text-link" href="assets.html">{t('viewAssets')} →</a>
-          </div>
-          <div className="table-scroll">
-            <table id="recentAssets">
-            <thead>
-              <tr>
-                <th>{t('date')}</th>
-                <th>{t('type')}</th>
-                <th>{t('name')}</th>
-                <th>{t('amount')}</th>
-                <th>{t('currency')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.id || `${r.date}-${r.name}`}>
-                  <td>{r.date || ''}</td>
-                  <td><span className="type-pill">{r.type || ''}</span></td>
-                  <td>{r.name || ''}</td>
-                  <td>{formatAmount(r.amount || 0)}</td>
-                  <td>{r.currency || ''}</td>
-                </tr>
-              ))}
-            </tbody>
-            </table>
-          </div>
-        </section>
+        <div className="dashboard-bento">
+          <div className="dashboard-breakdown">
+            <section className="app-card breakdown-card">
+              <div className="card-header">
+                <h2>{t('assetBreakdown')}</h2>
+                <a className="text-link" href="assets.html">{t('viewAssets')} →</a>
+              </div>
+              <div className="table-scroll">
+                <table id="recentAssets">
+                  <thead>
+                    <tr>
+                      <th>{t('type')}</th>
+                      <th>{t('amount')}</th>
+                      <th>{t('currency')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((r) => (
+                      <tr key={r.id || `${r.date}-${r.type_id}-${r.currency}`}>
+                        <td><span className="type-pill">{r.type || ''}</span></td>
+                        <td>{formatAmount(r.amount || 0)}</td>
+                        <td>{r.currency || ''}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
 
-        <div className="dashboard-actions">
-          <a className="info-card" href="chart.html">
-            <span className="metric-label">{t('charts')}</span>
-            <strong>{t('viewChart')}</strong>
-          </a>
-          <a className="info-card dark" href="add_asset.html">
-            <span className="metric-label">{t('quickAction')}</span>
-            <strong>{t('addAsset')}</strong>
-          </a>
-        </div>
-
-        <section className="app-card allocation-card">
-          <div className="card-header">
-            <h2>{t('assetAllocation')}</h2>
-          </div>
-          <div className="allocation-preview">
-            <div className="allocation-ring">
-              <span>{t('total')}</span>
-              <strong>100%</strong>
-            </div>
-            <div className="allocation-list">
-              {allocation.map((item, index) => (
-                <div key={`${item.name}-${index}`} className="allocation-row">
-                  <span><i />{item.name}</span>
-                  <strong>{item.percent}%</strong>
-                </div>
-              ))}
+            <div className="dashboard-actions">
+              <div className="info-card muted">
+                <span>
+                  <span className="metric-label">{t('rebalanceDate')}</span>
+                  <strong>{latestSnapshotDate}</strong>
+                </span>
+                <span className="info-icon">○</span>
+              </div>
+              <a className="info-card dark" href="rebalance.html">
+                <span>
+                  <span className="metric-label">{t('quickAction')}</span>
+                  <strong>{t('addNewRebalance')}</strong>
+                </span>
+                <span className="info-icon">＋</span>
+              </a>
             </div>
           </div>
-        </section>
 
-        <div className="inline-status">
-          {today} · FX:{' '}
-          {String(conversionMeta.missingPairs.length > 0 ? 'missing' : fxMeta.status || 'ok').toUpperCase()} ·{' '}
-          {t('updated')}: {fxUpdatedAt}
-          {conversionMeta.missingPairs.length > 0 && conversionMeta.excludedCount > 0
-            ? ` · ${t('excluded')}: ${conversionMeta.excludedCount}`
-            : ''}
+          <section className="app-card allocation-card">
+            <div className="card-header">
+              <h2>{t('assetAllocation')}</h2>
+            </div>
+            <div className="allocation-preview">
+              <div className="allocation-ring">
+                <span>{t('total')}</span>
+                <strong>100%</strong>
+              </div>
+              <div className="allocation-list">
+                {allocation.map((item, index) => (
+                  <div key={`${item.name}-${index}`} className="allocation-row">
+                    <span><i />{item.name}</span>
+                    <strong>{item.percent}%</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
         </div>
+
       </div>
     );
   }
@@ -533,9 +600,9 @@
     const active = pageName();
     const links = [
       ['dashboard', 'dashboard.html', 'overview'],
+      ['chart', 'chart.html', 'charts'],
       ['assets', 'assets.html', 'assets'],
       ['add_asset', 'add_asset.html', 'addAsset'],
-      ['chart', 'chart.html', 'charts'],
       ['asset_types', 'asset_types.html', 'assetTypes'],
       ['settings', 'settings.html', 'settings'],
     ];
@@ -566,7 +633,7 @@
             .filter(Boolean)
             .sort()
             .pop();
-          setState({ status: (rates || []).length > 0 ? 'ok' : 'missing', updatedAt: latest || '-' });
+          setState({ status: (rates || []).length > 0 ? 'ok' : 'missing', updatedAt: formatDateOnly(latest) });
         } catch (err) {
           setState({ status: 'missing', updatedAt: '-' });
         }
@@ -637,34 +704,42 @@
     }, []);
 
     async function saveBaseSettings() {
-      await window.api.setSetting('app.language', settings.language);
-      await window.api.setSetting('app.display_currency', settings.displayCurrency);
-      await window.api.setSetting('fx.cache_ttl_days', settings.fxCacheTtlDays || '90');
-      setUiLanguage(settings.language);
-      setMessage(translate(settings.language, 'settingsSaved'));
+      try {
+        await window.api.setSetting('app.language', settings.language);
+        await window.api.setSetting('app.display_currency', settings.displayCurrency);
+        await window.api.setSetting('fx.cache_ttl_days', settings.fxCacheTtlDays || '90');
+        setUiLanguage(settings.language);
+        setMessage(translate(settings.language, 'settingsSaved'));
+      } catch (err) {
+        setMessage(t('settingsSaveFailed'));
+      }
     }
 
     async function saveRates() {
-      const pairs = [
-        ['CNY', 'JPY', draftRates['CNY->JPY']],
-        ['USD', 'JPY', draftRates['USD->JPY']],
-        ['USD', 'CNY', draftRates['USD->CNY']],
-      ];
-      for (const [base, quote, rate] of pairs) {
-        const value = toNumber(rate, NaN);
-        if (!Number.isFinite(value) || value <= 0) continue;
-        const result = await window.api.upsertExchangeRate({
-          baseCurrency: base,
-          quoteCurrency: quote,
-          rate: value,
-        });
-        if (result && result.error) {
-          setMessage(result.error);
-          return;
+      try {
+        const pairs = [
+          ['CNY', 'JPY', draftRates['CNY->JPY']],
+          ['USD', 'JPY', draftRates['USD->JPY']],
+          ['USD', 'CNY', draftRates['USD->CNY']],
+        ];
+        for (const [base, quote, rate] of pairs) {
+          const value = toNumber(rate, NaN);
+          if (!Number.isFinite(value) || value <= 0) continue;
+          const result = await window.api.upsertExchangeRate({
+            baseCurrency: base,
+            quoteCurrency: quote,
+            rate: value,
+          });
+          if (result && result.error) {
+            setMessage(result.error);
+            return;
+          }
         }
+        await refresh();
+        setMessage(t('ratesSaved'));
+      } catch (err) {
+        setMessage(t('ratesSaveFailed'));
       }
-      await refresh();
-      setMessage(t('ratesSaved'));
     }
 
     async function onExportData() {
@@ -690,7 +765,7 @@
 
     function findUpdatedAt(base, quote) {
       const hit = rates.find((r) => r.base_currency === base && r.quote_currency === quote);
-      return hit && hit.updated_at ? hit.updated_at : '-';
+      return formatDateOnly(hit && hit.updated_at);
     }
 
     return (
@@ -699,6 +774,7 @@
           <h1>{t('settingsTitle')}</h1>
           <p className="page-subtitle">{t('settingsSubtitle')}</p>
         </div>
+        {message ? <p className="form-feedback">{message}</p> : null}
         <div className="settings-grid">
           <section className="app-card">
             <div className="card-header">
@@ -834,7 +910,6 @@
           </section>
         </div>
 
-        {message ? <p className="inline-status">{message}</p> : null}
       </div>
     );
   }
@@ -888,7 +963,6 @@
       const pre = {
         date: item.date || '',
         typeId: Number(item.type_id || 0),
-        name: item.name || '',
         amount: item.amount || '',
         currency: item.currency || '',
       };
@@ -904,7 +978,6 @@
         id: Number(editing.id),
         date: editing.date,
         typeId: Number(editing.typeId || 0),
-        name: editing.name,
         amount: toNumber(editing.amount, 0),
         currency: editing.currency,
       });
@@ -950,20 +1023,11 @@
               </select>
             </label>
             <label>
-              {t('name')}{' '}
-              <input
-                id="editName"
-                type="text"
-                value={editing.name}
-                onChange={(ev) => setEditing({ ...editing, name: ev.target.value })}
-              />
-            </label>
-            <label>
               {t('amount')}{' '}
               <input
                 id="editAmount"
                 type="number"
-                step="0.01"
+                step="1"
                 value={editing.amount}
                 onChange={(ev) => setEditing({ ...editing, amount: ev.target.value })}
               />
@@ -995,7 +1059,6 @@
             <tr>
               <th style={headerCellStyle}>{t('date')}</th>
               <th style={headerCellStyle}>{t('type')}</th>
-              <th style={headerCellStyle}>{t('name')}</th>
               <th style={headerCellStyle}>{t('amount')}</th>
               <th style={headerCellStyle}>{t('currency')}</th>
               <th style={headerCellStyle}>{t('actions')}</th>
@@ -1006,7 +1069,6 @@
               <tr key={a.id}>
                 <td style={cellStyle}>{a.date || ''}</td>
                 <td style={cellStyle}><span className="type-pill">{a.type || ''}</span></td>
-                <td style={cellStyle}>{a.name || ''}</td>
                 <td style={cellStyle}>{formatAmount(a.amount || 0)}</td>
                 <td style={cellStyle}>{a.currency || ''}</td>
                 <td style={cellStyle}>
@@ -1021,7 +1083,6 @@
                         id: a.id,
                         date: a.date || '',
                         typeId: a.type_id || '',
-                        name: a.name || '',
                         amount: a.amount || '',
                         currency: a.currency || 'USD',
                       })
@@ -1065,7 +1126,7 @@
     const [language] = useAppLanguage();
     const t = (key) => translate(language, key);
     const [types, setTypes] = useState([]);
-    const [form, setForm] = useState({ date: '', typeId: '', name: '', amount: '', currency: 'USD' });
+    const [form, setForm] = useState({ date: '', typeId: '', amount: '', currency: 'USD' });
 
     useEffect(() => {
       (async () => {
@@ -1081,7 +1142,6 @@
             next = {
               date: p.date || '',
               typeId: p.typeId ? String(p.typeId) : first,
-              name: p.name || '',
               amount: p.amount !== undefined ? String(p.amount) : '',
               currency: p.currency || 'USD',
             };
@@ -1098,7 +1158,6 @@
       await window.api.addAsset({
         date: form.date,
         typeId: Number(form.typeId || 0),
-        name: form.name,
         amount: toNumber(form.amount, 0),
         currency: form.currency || '',
       });
@@ -1139,15 +1198,6 @@
             </select>
           </label>
           <label>
-            {t('name')}{' '}
-            <input
-              id="name"
-              type="text"
-              value={form.name}
-              onChange={(ev) => setForm({ ...form, name: ev.target.value })}
-            />
-          </label>
-          <label>
             {t('amount')}{' '}
             <input
               id="amount"
@@ -1180,6 +1230,7 @@
     const t = (key) => translate(language, key);
     const [types, setTypes] = useState([]);
     const [newName, setNewName] = useState('');
+    const [newRegion, setNewRegion] = useState('');
     const [editing, setEditing] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 10;
@@ -1205,14 +1256,19 @@
     async function addType(ev) {
       ev.preventDefault();
       if (!newName.trim()) return;
-      await window.api.addAssetType(newName.trim());
+      await window.api.addAssetType({ name: newName.trim(), region: newRegion.trim() });
       setNewName('');
+      setNewRegion('');
       refresh();
     }
 
     async function updateType() {
       if (!editing || !editing.name.trim()) return;
-      await window.api.modifyAssetType(Number(editing.id), editing.name.trim());
+      await window.api.modifyAssetType({
+        id: Number(editing.id),
+        name: editing.name.trim(),
+        region: String(editing.region || '').trim(),
+      });
       setEditing(null);
       refresh();
     }
@@ -1255,6 +1311,12 @@
             value={newName}
             onChange={(ev) => setNewName(ev.target.value)}
           />
+          <input
+            id="typeRegion"
+            placeholder={t('newTypeRegion')}
+            value={newRegion}
+            onChange={(ev) => setNewRegion(ev.target.value)}
+          />
           <button type="submit">{t('addType')}</button>
         </form>
 
@@ -1267,6 +1329,12 @@
               required
               value={editing.name}
               onChange={(ev) => setEditing({ ...editing, name: ev.target.value })}
+            />{' '}
+            <input
+              id="editTypeRegion"
+              placeholder={t('region')}
+              value={editing.region || ''}
+              onChange={(ev) => setEditing({ ...editing, region: ev.target.value })}
             />{' '}
             <button id="updateBtn" type="button" onClick={updateType}>
               {t('update')}
@@ -1283,6 +1351,7 @@
               <tr>
                 <th style={headerCellStyle}>{t('id')}</th>
                 <th style={headerCellStyle}>{t('name')}</th>
+                <th style={headerCellStyle}>{t('region')}</th>
                 <th style={headerCellStyle}>{t('actions')}</th>
               </tr>
             </thead>
@@ -1291,8 +1360,9 @@
                 <tr key={tt.id}>
                   <td style={cellStyle}>{String(tt.id)}</td>
                   <td style={cellStyle}>{tt.name}</td>
+                  <td style={cellStyle}>{tt.region || ''}</td>
                   <td style={cellStyle}>
-                    <button style={actionBtnStyle} className="edit" onClick={() => setEditing({ id: tt.id, name: tt.name })}>
+                    <button style={actionBtnStyle} className="edit" onClick={() => setEditing({ id: tt.id, name: tt.name, region: tt.region || '' })}>
                       {t('edit')}
                     </button>{' '}
                     <button style={actionBtnStyle} className="del" onClick={() => deleteType(tt.id)}>
@@ -1342,6 +1412,171 @@
             {t('page')} {currentPage} {t('of')} {totalPages}
           </span>
         </div>
+      </div>
+    );
+  }
+
+  function RebalancePage() {
+    const [language] = useAppLanguage();
+    const t = (key) => translate(language, key);
+    const [sourceDate, setSourceDate] = useState('');
+    const [rebalanceDate, setRebalanceDate] = useState('');
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
+    const [message, setMessage] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+      (async () => {
+        try {
+          let template;
+          if (window.api.getRebalanceTemplate) {
+            template = await window.api.getRebalanceTemplate();
+          } else {
+            const latestAssets = await window.api.getLatestAssets();
+            template = {
+              sourceDate: latestAssets[0] ? latestAssets[0].date : '',
+              rebalanceDate: new Date().toISOString().slice(0, 10),
+              items: (latestAssets || []).map((asset) => ({
+                sourceAssetId: asset.id,
+                typeId: asset.type_id,
+                type: asset.type || '',
+                region: asset.region || '',
+                amount: asset.amount || 0,
+                currency: asset.currency || '',
+              })),
+            };
+          }
+          setSourceDate(template.sourceDate || '');
+          setRebalanceDate(template.rebalanceDate || '');
+          setItems((template.items || []).map((item) => ({
+            ...item,
+            amount: String(Math.round(toNumber(item.amount, 0))),
+          })));
+        } catch (err) {
+          setLoadError(err && err.message ? err.message : t('rebalanceLoadFailed'));
+        } finally {
+          setLoading(false);
+        }
+      })();
+    }, []);
+
+    function updateAmount(index, value) {
+      setItems((current) =>
+        current.map((item, itemIndex) => (itemIndex === index ? { ...item, amount: value } : item))
+      );
+    }
+
+    async function saveSnapshot() {
+      if (saving) return;
+      const nextItems = items.map((item) => ({
+        typeId: Number(item.typeId || 0),
+        amount: Number(item.amount),
+        currency: item.currency,
+      }));
+      const invalid = nextItems.some(
+        (item) => !Number.isFinite(item.amount) || item.amount < 0 || !Number.isInteger(item.amount)
+      );
+      if (!rebalanceDate || invalid) {
+        setMessage(t('invalidRebalanceAmount'));
+        return;
+      }
+
+      setSaving(true);
+      const result = await window.api.saveRebalance({ date: rebalanceDate, items: nextItems });
+      setSaving(false);
+      if (result && result.success) {
+        setMessage(t('rebalanceSaved'));
+        window.setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 700);
+        return;
+      }
+      setMessage((result && result.error) || t('rebalanceSaveFailed'));
+    }
+
+    return (
+      <div className="page-stack rebalance-page">
+        <div className="page-header">
+          <div>
+            <h1>{t('rebalanceTitle')}</h1>
+            <p className="page-subtitle">{t('rebalanceSubtitle')}</p>
+          </div>
+          <a className="button-link" href="dashboard.html">{t('backToDashboard')}</a>
+        </div>
+
+        {message ? <p className="form-feedback">{message}</p> : null}
+
+        {loading ? (
+          <section className="app-card empty-state-card">
+            <h2>{t('loadingRebalance')}</h2>
+          </section>
+        ) : loadError ? (
+          <section className="app-card empty-state-card">
+            <h2>{t('rebalanceLoadFailed')}</h2>
+            <p className="page-subtitle">{loadError}</p>
+          </section>
+        ) : items.length === 0 ? (
+          <section className="app-card empty-state-card">
+            <h2>{t('noRebalanceTemplate')}</h2>
+            <a className="button-link" href="add_asset.html">{t('createAssetFirst')}</a>
+          </section>
+        ) : (
+          <section className="app-card">
+            <div className="rebalance-meta">
+              <div>
+                <span className="metric-label">{t('sourceSnapshot')}</span>
+                <strong>{sourceDate || '-'}</strong>
+              </div>
+              <label>
+                <span className="metric-label">{t('rebalanceDate')}</span>
+                <input
+                  type="date"
+                  value={rebalanceDate}
+                  onChange={(ev) => setRebalanceDate(ev.target.value)}
+                />
+              </label>
+            </div>
+
+            <div className="table-scroll">
+              <table className="rebalance-table">
+                <thead>
+                  <tr>
+                    <th>{t('type')}</th>
+                    <th>{t('region')}</th>
+                    <th>{t('currency')}</th>
+                    <th>{t('latestAmount')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item, index) => (
+                    <tr key={`${item.sourceAssetId}-${index}`}>
+                      <td><span className="type-pill">{item.type || ''}</span></td>
+                      <td>{item.region || ''}</td>
+                      <td>{item.currency || ''}</td>
+                      <td>
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={item.amount}
+                          onChange={(ev) => updateAmount(index, ev.target.value)}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="form-actions">
+              <button type="button" disabled={saving} onClick={saveSnapshot}>
+                {saving ? `${t('save')}...` : t('saveRebalance')}
+              </button>
+            </div>
+          </section>
+        )}
       </div>
     );
   }
@@ -1489,6 +1724,7 @@
     if (p === 'assets') page = <AssetsPage />;
     if (p === 'add_asset') page = <AddAssetPage />;
     if (p === 'asset_types') page = <AssetTypesPage />;
+    if (p === 'rebalance') page = <RebalancePage />;
     if (p === 'chart') page = <ChartPage />;
     if (p === 'settings') page = <SettingsPage />;
     return <AppShell language={language}>{page}</AppShell>;

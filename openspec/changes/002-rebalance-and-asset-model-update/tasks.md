@@ -15,74 +15,74 @@
 
 ## 2. Database and Migration
 
-- [ ] Add safe migration for `asset_type.region`.
-- [ ] Preserve compatibility with existing `asset.name` column.
-- [ ] Ensure existing databases open without data loss.
-- [ ] Ensure imported databases with legacy `asset.name` remain valid.
-- [ ] Add or update backup behavior if migration changes database structure.
+- [x] Add safe migration for `asset_type.region`.
+- [x] Preserve compatibility with existing `asset.name` column.
+- [x] Ensure existing databases open without data loss.
+- [x] Ensure imported databases with legacy `asset.name` remain valid.
+- [x] Add or update backup behavior if migration changes database structure.
 
 ## 3. Asset Name UI Removal
 
-- [ ] Remove Asset Name column from Dashboard current assets table.
-- [ ] Remove Asset Name column from Assets list table.
-- [ ] Remove Asset Name input from Add Asset form.
-- [ ] Remove Asset Name input from Edit Asset form.
-- [ ] Stop writing user-entered name values for new assets.
-- [ ] Preserve existing business calculations after removing Name from UI.
-- [ ] Update multilingual labels and fallback behavior.
+- [x] Remove Asset Name column from Dashboard current assets table.
+- [x] Remove Asset Name column from Assets list table.
+- [x] Remove Asset Name input from Add Asset form.
+- [x] Remove Asset Name input from Edit Asset form.
+- [x] Stop writing user-entered name values for new assets.
+- [x] Preserve existing business calculations after removing Name from UI.
+- [x] Update multilingual labels and fallback behavior.
 
 ## 4. Asset Type Region
 
-- [ ] Add Region field to Asset Type create flow.
-- [ ] Add Region field to Asset Type edit flow.
-- [ ] Show Region in Asset Types list.
-- [ ] Persist Region in database.
-- [ ] Load Region when editing existing asset types.
-- [ ] Support empty Region without blocking save.
-- [ ] Support Chinese/Japanese Region text input.
-- [ ] Add multilingual labels and validation messages.
+- [x] Add Region field to Asset Type create flow.
+- [x] Add Region field to Asset Type edit flow.
+- [x] Show Region in Asset Types list.
+- [x] Persist Region in database.
+- [x] Load Region when editing existing asset types.
+- [x] Support empty Region without blocking save.
+- [x] Support Chinese/Japanese Region text input.
+- [x] Add multilingual labels and validation messages.
 
 ## 5. Add New Rebalance Flow
 
-- [ ] Add `Add New Rebalance` button to Dashboard.
-- [ ] Define empty state when no previous asset snapshot exists.
-- [ ] Load latest-date asset snapshot as rebalance template.
-- [ ] Set rebalance date to today by default.
-- [ ] Allow user to change rebalance date before saving.
-- [ ] Show copied assets without Asset Name.
-- [ ] Allow bulk editing of each copied asset amount.
-- [ ] Preserve copied asset type and currency.
-- [ ] Validate amount input before save.
-- [ ] Save rebalance as a new asset snapshot.
-- [ ] Prevent accidental double-save where practical.
-- [ ] After save, navigate to Dashboard or Assets with visible success feedback.
-- [ ] Ensure Dashboard total uses the saved rebalance snapshot.
-- [ ] Ensure Chart includes the saved rebalance date.
+- [x] Add `Add New Rebalance` button to Dashboard.
+- [x] Define empty state when no previous asset snapshot exists.
+- [x] Load latest-date asset snapshot as rebalance template.
+- [x] Set rebalance date to today by default.
+- [x] Allow user to change rebalance date before saving.
+- [x] Show copied assets without Asset Name.
+- [x] Allow bulk editing of each copied asset amount.
+- [x] Preserve copied asset type and currency.
+- [x] Validate amount input before save.
+- [x] Save rebalance as a new asset snapshot.
+- [x] Prevent accidental double-save where practical.
+- [x] After save, navigate to Dashboard or Assets with visible success feedback.
+- [x] Ensure Dashboard total uses the saved rebalance snapshot.
+- [x] Ensure Chart includes the saved rebalance date.
 
 ## 6. Settings Save Feedback
 
-- [ ] Show success feedback after `Save Preferences` completes.
-- [ ] Show error feedback if `Save Preferences` fails.
-- [ ] Show success feedback after `Save FX Rates` completes.
-- [ ] Show error feedback if `Save FX Rates` fails.
-- [ ] Keep feedback visible long enough to be noticed.
-- [ ] Ensure feedback text is multilingual.
+- [x] Show success feedback after `Save Preferences` completes.
+- [x] Show error feedback if `Save Preferences` fails.
+- [x] Show success feedback after `Save FX Rates` completes.
+- [x] Show error feedback if `Save FX Rates` fails.
+- [x] Keep feedback visible long enough to be noticed.
+- [x] Ensure feedback text is multilingual.
 
 ## 7. Verification
 
-- [ ] Run the app locally.
-- [ ] Verify existing database opens after migration.
-- [ ] Verify Dashboard no longer shows Asset Name.
-- [ ] Verify Assets list no longer shows Asset Name.
-- [ ] Verify Add Asset works without Name.
-- [ ] Verify Edit Asset works without Name.
-- [ ] Verify Asset Type Region can be added, edited, listed, and persisted.
-- [ ] Verify Rebalance copies latest-date assets and defaults date to today.
-- [ ] Verify Rebalance save creates a new snapshot without modifying previous snapshots.
-- [ ] Verify Dashboard total changes after Rebalance save.
-- [ ] Verify Chart changes after Rebalance save.
-- [ ] Verify Settings Preferences feedback appears after save.
-- [ ] Verify Settings FX feedback appears after save.
-- [ ] Verify `en-US`, `zh-CN`, and `ja-JP` labels for new UI.
-- [ ] Verify local database export/import remains compatible.
-- [ ] Verify no existing persisted data is deleted during normal startup or migration.
+- [x] Run the app locally.
+- [x] Verify existing database opens after migration.
+- [x] Verify Dashboard no longer shows Asset Name.
+- [x] Verify Assets list no longer shows Asset Name.
+- [x] Verify Add Asset works without Name.
+- [x] Verify Edit Asset works without Name.
+- [x] Verify Asset Type Region can be added, edited, listed, and persisted.
+- [x] Verify Rebalance copies latest-date assets and defaults date to today.
+- [x] Verify Rebalance save creates a new snapshot without modifying previous snapshots.
+- [x] Verify Dashboard total changes after Rebalance save.
+- [x] Verify Chart changes after Rebalance save.
+- [x] Verify Settings Preferences feedback appears after save.
+- [x] Verify Settings FX feedback appears after save.
+- [x] Verify `en-US`, `zh-CN`, and `ja-JP` labels for new UI.
+- [x] Verify local database export/import remains compatible.
+- [x] Verify no existing persisted data is deleted during normal startup or migration.

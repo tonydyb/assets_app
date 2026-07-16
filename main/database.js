@@ -60,20 +60,17 @@ function setUserVersion(version) {
   db.run(`PRAGMA user_version = ${Number(version)}`);
 }
 
-function backupDatabase(fromVersion, toVersion) {
-  const dbPath = resolveDbPath();
-  if (!fs.existsSync(dbPath)) return null;
+function columnExists(tableName, columnName) {
+  const result = db.exec(`PRAGMA table_info(${tableName})`);
+  if (!result.length || !result[0].values.length) return false;
+  return result[0].values.some((row) => row[1] === columnName);
+}
 
-  const backupDir = path.join(path.dirname(dbPath), 'backups');
-  if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
-
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const backupPath = path.join(
-    backupDir,
-    `assets.v${fromVersion}-to-v${toVersion}.${timestamp}.db`
-  );
-  fs.copyFileSync(dbPath, backupPath);
-  return backupPath;
+function isAlreadyAppliedAddColumnMigration(sql) {
+  const normalized = String(sql || '').trim().replace(/;$/, '');
+  const match = /^ALTER\s+TABLE\s+([a-zA-Z_][\w]*)\s+ADD\s+COLUMN\s+([a-zA-Z_][\w]*)\b/i.exec(normalized);
+  if (!match) return false;
+  return columnExists(match[1], match[2]);
 }
 
 function backupCurrentDatabase(tag) {
@@ -99,16 +96,16 @@ function runMigrations() {
   if (currentVersion >= targetVersion) return;
 
   const pending = migrationFiles.filter((m) => m.version > currentVersion);
-  const backupPath = backupDatabase(currentVersion, targetVersion);
-  if (backupPath) {
-    console.info(`[db] backup created: ${backupPath}`);
-  }
 
   for (const migration of pending) {
     const sql = fs.readFileSync(migration.filePath, 'utf8');
     try {
       db.run('BEGIN');
-      db.run(sql);
+      if (isAlreadyAppliedAddColumnMigration(sql)) {
+        console.info(`[db] migration already applied: ${migration.fileName}`);
+      } else {
+        db.run(sql);
+      }
       setUserVersion(migration.version);
       db.run('COMMIT');
       console.info(`[db] migration applied: ${migration.fileName}`);

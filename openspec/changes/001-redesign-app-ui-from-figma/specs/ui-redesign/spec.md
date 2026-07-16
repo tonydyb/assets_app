@@ -27,6 +27,7 @@ The application SHALL provide a consistent app shell across all pages.
 - **WHEN** the user opens Dashboard, Assets, Add Asset, Chart, Asset Types, or Settings
 - **THEN** the page uses the same high-level layout and navigation pattern
 - **AND** the current page is visually identifiable
+- **AND** navigation order is Overview, Charts, Assets, Add Asset, Asset Types, Settings
 - **AND** navigation labels follow the selected application language
 
 ### Requirement: Dashboard Redesign
@@ -39,7 +40,9 @@ The Dashboard page SHALL display total assets, current assets, and FX status usi
 - **THEN** the total asset amount is visually prominent
 - **AND** the display currency is shown next to the amount
 - **AND** the current/latest assets are shown in a readable table or card-based section
-- **AND** FX status and last updated time remain visible
+- **AND** FX status and last updated time remain visible in the shared footer or status area
+- **AND** Dashboard content does not duplicate the shared FX status line
+- **AND** last updated values are displayed as date-only text in `YYYY-MM-DD` format
 
 #### Scenario: Dashboard total is calculated
 
@@ -97,6 +100,7 @@ The Add Asset page SHALL preserve asset creation behavior while applying the Fig
 - **THEN** the user can choose date, type, currency, and amount
 - **AND** the user may leave name empty
 - **AND** the amount accepts integer input
+- **AND** form controls use compact grouped widths on desktop instead of each control spanning the full page width
 - **AND** the created asset appears in relevant asset lists and calculations
 
 ### Requirement: Asset Types Page Redesign
@@ -108,6 +112,7 @@ The Asset Types page SHALL preserve asset type management behavior while applyin
 - **WHEN** the user opens Asset Types
 - **THEN** the user can add, edit, and delete asset types
 - **AND** Chinese and Japanese type names can be entered and saved
+- **AND** Add Type inputs and action button do not overlap and wrap responsively
 - **AND** all labels and messages follow the selected application language
 
 ### Requirement: Settings Page Redesign
@@ -132,6 +137,7 @@ The Settings page SHALL preserve language, currency, FX, and local database migr
 - **THEN** the app persists the exchange rates
 - **AND** Dashboard and Chart calculations reflect the saved rates
 - **AND** updated-at information remains visible
+- **AND** updated-at information is displayed as date-only text in `YYYY-MM-DD` format
 
 #### Scenario: User exports local database
 

@@ -989,12 +989,48 @@ form {
 }
 
 #addForm {
+  align-items: end;
+  grid-template-columns: repeat(2, minmax(220px, 320px));
   max-width: 760px !important;
 }
 
+#addForm label {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+#addForm input,
+#addForm select {
+  box-sizing: border-box;
+  width: 100%;
+}
+
 #addTypeForm {
-  align-items: end;
-  grid-template-columns: minmax(240px, 1fr) auto;
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  max-width: 920px !important;
+}
+
+#addTypeForm input {
+  box-sizing: border-box;
+  flex: 0 1 300px;
+  height: 42px;
+  min-width: 220px;
+  width: auto !important;
+}
+
+#addTypeForm button {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 42px;
+  justify-content: center;
+  line-height: 1;
+  margin: 0;
+  white-space: nowrap;
 }
 
 #editAssetForm,
@@ -1187,6 +1223,10 @@ canvas#chart {
   justify-self: start;
 }
 
+#addForm button {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 980px) {
   .page-header {
     align-items: start;
@@ -1196,15 +1236,51 @@ canvas#chart {
   .settings-grid {
     grid-template-columns: 1fr;
   }
+
+  #addForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #addTypeForm input {
+    flex: 1 1 100%;
+  }
 }
 
 .app-card {
   display: block;
 }
 
-.dashboard-actions {
+.dashboard-bento {
+  align-items: stretch;
   display: grid;
   gap: 24px;
+  grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+}
+
+.dashboard-breakdown {
+  display: grid;
+  gap: 24px;
+  grid-template-rows: 1fr auto;
+}
+
+.breakdown-card {
+  min-height: 320px;
+}
+
+.breakdown-card .table-scroll {
+  border-radius: 0;
+}
+
+.breakdown-card table th:nth-child(2),
+.breakdown-card table th:nth-child(3),
+.breakdown-card table td:nth-child(2),
+.breakdown-card table td:nth-child(3) {
+  text-align: right;
+}
+
+.dashboard-actions {
+  display: grid;
+  gap: 16px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -1219,9 +1295,30 @@ canvas#chart {
   padding: 20px 24px;
 }
 
+.info-card > span:first-child {
+  display: grid;
+  gap: 6px;
+}
+
 .info-card strong {
   color: var(--am-text);
   font-size: 20px;
+}
+
+.info-card.muted {
+  background: #eef4ff;
+}
+
+.info-icon {
+  align-items: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 15px;
+  font-weight: 900;
+  height: 24px;
+  justify-content: center;
+  width: 24px;
 }
 
 .info-card.dark {
@@ -1237,15 +1334,74 @@ canvas#chart {
   color: #fff;
 }
 
+.info-card.accent {
+  background: #eef6ff;
+  border-color: #c9ddff;
+}
+
+.form-feedback {
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--am-radius-sm);
+  color: #14532d;
+  font-size: 14px;
+  font-weight: 800;
+  margin: 0;
+  padding: 12px 14px;
+}
+
+.rebalance-meta {
+  align-items: end;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(180px, 1fr) minmax(220px, 280px);
+  margin-bottom: 22px;
+}
+
+.rebalance-meta > div,
+.rebalance-meta label {
+  background: var(--am-surface-soft);
+  border: 1px solid var(--am-border);
+  border-radius: var(--am-radius-sm);
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 14px;
+}
+
+.rebalance-meta strong {
+  color: var(--am-text);
+  font-size: 20px;
+}
+
+.rebalance-table input {
+  max-width: 180px;
+  min-width: 120px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+.empty-state-card {
+  align-items: start;
+  display: grid;
+  gap: 18px;
+  justify-content: start;
+}
+
 .allocation-card {
-  min-height: 280px;
+  min-height: 100%;
 }
 
 .allocation-preview {
   align-items: center;
   display: grid;
-  gap: 36px;
-  grid-template-columns: 220px 1fr;
+  gap: 24px;
+  grid-template-columns: 1fr;
+  min-height: 300px;
 }
 
 .allocation-ring {
@@ -1280,6 +1436,7 @@ canvas#chart {
   gap: 8px 24px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   padding-top: 16px;
+  width: 100%;
 }
 
 .allocation-row {
@@ -1343,7 +1500,9 @@ canvas#chart {
 }
 
 @media (max-width: 760px) {
+  .dashboard-bento,
   .dashboard-actions,
+  .rebalance-meta,
   .allocation-preview,
   .allocation-list,
   .data-actions {
