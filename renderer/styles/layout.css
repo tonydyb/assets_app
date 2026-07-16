@@ -1,0 +1,140 @@
+.app-shell {
+  background: var(--am-bg);
+  min-height: 100vh;
+  padding-bottom: 56px;
+}
+
+.topbar {
+  align-items: center;
+  background: rgba(248, 249, 255, 0.94);
+  border-bottom: 1px solid var(--am-border);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  height: 64px;
+  left: 0;
+  margin: 0;
+  max-width: none;
+  padding: 0 24px;
+  position: sticky;
+  right: 0;
+  text-align: left;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  color: #000;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.main-nav {
+  align-items: center;
+  display: flex;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 28px;
+  justify-content: center;
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-transform: none;
+}
+
+.main-nav a {
+  border-bottom: 2px solid transparent;
+  color: var(--am-muted);
+  padding: 23px 0 18px;
+  white-space: nowrap;
+}
+
+.main-nav a.active {
+  border-bottom-color: #000;
+  color: #000;
+}
+
+.topbar-actions {
+  align-items: center;
+  color: var(--am-text);
+  display: flex;
+  font-size: 18px;
+  gap: 16px;
+}
+
+.app-main {
+  display: grid;
+  gap: 32px;
+  margin: 0 auto;
+  max-width: var(--am-content);
+  padding: 48px 24px;
+}
+
+.page-stack {
+  display: grid;
+  gap: 32px;
+}
+
+.app-card,
+.hero-card {
+  background: var(--am-surface);
+  border: 1px solid var(--am-border);
+  border-radius: var(--am-radius);
+  box-shadow: none;
+  padding: 25px;
+}
+
+.hero-card {
+  display: grid;
+  gap: 16px;
+}
+
+.eyebrow,
+.metric-label,
+th {
+  color: var(--am-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hero-total {
+  align-items: baseline;
+  display: flex;
+  gap: 16px;
+}
+
+.hero-total #totalAsset,
+.hero-total span:first-child {
+  color: #000;
+  font-size: clamp(36px, 5vw, 48px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.hero-currency {
+  color: var(--am-muted);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.card-header {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.text-link {
+  color: var(--am-muted-2);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}

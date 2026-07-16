@@ -42,6 +42,7 @@ The Dashboard page SHALL display total assets, current assets, and FX status usi
 - **AND** the current/latest assets are shown in a readable table or card-based section
 - **AND** FX status and last updated time remain visible in the shared footer or status area
 - **AND** Dashboard content does not duplicate the shared FX status line
+- **AND** the Total Asset summary does not show secondary metric rows below the total amount
 - **AND** last updated values are displayed as date-only text in `YYYY-MM-DD` format
 
 #### Scenario: Dashboard total is calculated
